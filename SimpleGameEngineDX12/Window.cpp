@@ -39,15 +39,15 @@ bool Window::init()
 	wcex.hIcon = LoadIcon(NULL, IDI_APPLICATION);
 	wcex.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
 	wcex.hInstance = NULL;
-	wcex.lpszClassName = (LPCWSTR)"MyWindow";
-	wcex.lpszMenuName = (LPCWSTR)"";
+	wcex.lpszClassName = TEXT("MyWindow");
+	wcex.lpszMenuName = TEXT("");
 	wcex.style = NULL;
 	wcex.lpfnWndProc = &WndPrc;
 
 	if(!::RegisterClassEx(&wcex)) return false;
 
 	if (!window) window = this;
-	m_hwnd = ::CreateWindowEx(WS_EX_OVERLAPPEDWINDOW, (LPCWSTR)"MyWindow", (LPCWSTR)"DirectX Engine", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 1024, 768, NULL, NULL, NULL, NULL);
+	m_hwnd = ::CreateWindowEx(WS_EX_OVERLAPPEDWINDOW, TEXT("MyWindow"), TEXT("DirectX Engine"), WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 1024, 768, NULL, NULL, NULL, NULL);
 	if (!m_hwnd) return false;
 
 	::ShowWindow(m_hwnd, SW_SHOW);

@@ -4,27 +4,39 @@
     <Filter Include="App">
       <UniqueIdentifier>{0dd20d31-b340-4ceb-b9a1-2a7c78dd21f3}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Engine">
+    <Filter Include="GameEngine">
       <UniqueIdentifier>{d66037f7-cb90-45dd-8989-3544dc2958e6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameEngine\WindowingSystem">
+      <UniqueIdentifier>{ff94c107-7786-4375-b8d0-bcf0a2788095}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameEngine\GraphicsEngine">
+      <UniqueIdentifier>{b275bd09-44bb-4fde-b751-4a6c28cec7ef}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
       <Filter>App</Filter>
     </ClCompile>
-    <ClCompile Include="Window.cpp">
-      <Filter>Engine</Filter>
-    </ClCompile>
     <ClCompile Include="AppWindow.cpp">
       <Filter>App</Filter>
     </ClCompile>
+    <ClCompile Include="Window.cpp">
+      <Filter>GameEngine\WindowingSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicsEngine.cpp">
+      <Filter>GameEngine\GraphicsEngine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Window.h">
-      <Filter>Engine</Filter>
-    </ClInclude>
     <ClInclude Include="AppWindow.h">
       <Filter>App</Filter>
+    </ClInclude>
+    <ClInclude Include="Window.h">
+      <Filter>GameEngine\WindowingSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsEngine.h">
+      <Filter>GameEngine\GraphicsEngine</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
