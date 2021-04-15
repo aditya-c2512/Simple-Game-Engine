@@ -8,6 +8,10 @@ public :
 	// Initialise the window
 	bool init();
 	bool broadcast();
+
+	RECT getClientWindowRect();
+	void setHWND(HWND hwnd);
+
 	// Release or destroy the window
 	bool release();
 	bool isRun();
