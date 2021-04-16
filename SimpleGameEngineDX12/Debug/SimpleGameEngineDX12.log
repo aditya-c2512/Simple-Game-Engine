@@ -3,6 +3,7 @@
   GraphicsEngine.cpp
   main.cpp
   SwapChain.cpp
+  VertexBuffer.cpp
   Window.cpp
   Generating Code...
   SimpleGameEngineDX12.vcxproj -> D:\Projects\Simple-Game-Engine\SimpleGameEngineDX12\Debug\SimpleGameEngineDX12.exe
