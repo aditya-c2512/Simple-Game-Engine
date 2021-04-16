@@ -27,6 +27,14 @@ bool SwapChain::init(HWND hwnd, UINT width, UINT height)
 	HRESULT result = GraphicsEngine::get()->dxgi_factory->CreateSwapChain(d3d_device, &swapChainDesc, &swapChain);
 	if (FAILED(result)) return false;
 
+	ID3D11Texture2D* buffer;
+	result = swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&buffer);
+	if (FAILED(result)) return false;
+
+	result = d3d_device->CreateRenderTargetView(buffer, NULL, &renderTargetView);
+	buffer->Release();
+	if (FAILED(result)) return false;
+
 	return true;
 }
 
@@ -41,7 +49,8 @@ SwapChain::~SwapChain()
 {
 }
 
-bool SwapChain::present()
+bool SwapChain::present(bool vsync)
 {
+	swapChain->Present(vsync, NULL);
 	return true;
 }

@@ -1,4 +1,5 @@
 ﻿  AppWindow.cpp
+  DeviceContext.cpp
   GraphicsEngine.cpp
   main.cpp
   SwapChain.cpp

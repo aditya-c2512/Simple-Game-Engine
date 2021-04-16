@@ -2,6 +2,8 @@
 
 #include <d3d11.h>
 
+class DeviceContext;
+
 class SwapChain
 {
 public :
@@ -10,9 +12,12 @@ public :
 	bool release();
 	~SwapChain();
 
-	bool present();
+	bool present(bool vsync);
 
 private :
 	IDXGISwapChain* swapChain;
+	ID3D11RenderTargetView* renderTargetView;
+
+	friend class DeviceContext;
 };
 

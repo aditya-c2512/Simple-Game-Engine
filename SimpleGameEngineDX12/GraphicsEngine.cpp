@@ -1,5 +1,6 @@
 #include "GraphicsEngine.h"
 #include "SwapChain.h"
+#include "DeviceContext.h"
 
 GraphicsEngine::GraphicsEngine()
 {
@@ -22,6 +23,8 @@ bool GraphicsEngine::init()
 	UINT flSize = ARRAYSIZE(featureLevels);
 
 	HRESULT result = 0;
+
+	ID3D11DeviceContext* d3d_deviceContext;
 	for(UINT dtIndex = 0; dtIndex < dtSize; dtSize++)
 	{
 		result = D3D11CreateDevice(NULL, driverTypes[dtIndex], NULL, NULL, featureLevels, flSize, D3D11_SDK_VERSION, &d3d_device, &featureLevel, &d3d_deviceContext);
@@ -32,6 +35,8 @@ bool GraphicsEngine::init()
 	}
 
 	if (FAILED(result)) return false;
+
+	immediateDeviceContext = new DeviceContext(d3d_deviceContext);
 
 	//SWAP CHAIN FACTORY CREATION
 	d3d_device->QueryInterface(__uuidof(IDXGIDevice), (void**)&dxgi_device);
@@ -47,7 +52,7 @@ bool GraphicsEngine::release()
 	dxgi_adapter->Release();
 	dxgi_factory->Release();
 
-	d3d_deviceContext->Release();
+	immediateDeviceContext->release();
 	d3d_device->Release();
 	return true;
 }
@@ -65,4 +70,9 @@ GraphicsEngine* GraphicsEngine::get()
 SwapChain* GraphicsEngine::createSwapChain()
 {
 	return new SwapChain();
+}
+
+DeviceContext* GraphicsEngine::getImmediateDeviceContext()
+{
+	return this->immediateDeviceContext;
 }
