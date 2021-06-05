@@ -3,9 +3,9 @@
 int main()
 {
 	AppWindow app;
-	if (app.init())
+	if (app.init())//IF APP WINDOW INITIALIZATION IS SUCCESSFUL
 	{
-		while (app.isRun())
+		while (app.isRun())//IF APP WINDOW IS CURRENTLY RUNNING
 		{
 			app.broadcast();
 		}
