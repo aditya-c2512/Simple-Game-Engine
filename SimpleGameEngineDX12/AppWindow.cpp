@@ -1,4 +1,5 @@
 #include "AppWindow.h"
+#include <Windows.h>
 
 struct vec3
 {
@@ -8,7 +9,14 @@ struct vec3
 struct vertex
 {
 	vec3 position;
+	vec3 position1;
 	vec3 color;
+};
+
+__declspec(align(16))
+struct constant
+{
+	unsigned int time;
 };
 
 AppWindow::AppWindow()
@@ -30,11 +38,11 @@ void AppWindow::onCreate()
 
 	vertex list[] =
 	{
-		//X - Y - Z - R - G - B
-		{-0.5f, -0.5f, 0.0f, 0.5f, 0.5f, 0.0f}, // POS1
-		{-0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 1.0f}, // POS2
-		{0.5f, -0.5f, 0.0f, 0.5f, 0.0f, 0.5f}, // POS3
-		{0.5f, 0.5f, 0.0f, 1.0f, 0.5f, 0.0f}, // POS4
+		//X1 - Y1 - Z1 - X2 - Y2 - Z2 - R - G - B
+		{-0.5f, -0.5f, 0.0f,	-0.32f, -0.11f, 0.0f,	0.5f, 0.5f, 0.0f}, // POS1
+		{-0.5f, 0.5f, 0.0f,		-0.11f, 0.78f, 0.0f,	0.0f, 1.0f, 1.0f}, // POS2
+		{ 0.5f, -0.5f, 0.0f,	 0.75f, -0.73f, 0.0f,	0.5f, 0.0f, 0.5f}, // POS3
+		{ 0.5f, 0.5f, 0.0f,		 0.88f, 0.77f, 0.0f,	1.0f, 0.5f, 0.0f}, // POS4
 	};
 
 	m_vb = GraphicsEngine::get()->createVertexBuffer();
@@ -51,6 +59,11 @@ void AppWindow::onCreate()
 	GraphicsEngine::get()->compilePixelShader(L"PixelShader.hlsl", "psmain", &shader_byte_code, &size_shader);
 	m_pixel_shader = GraphicsEngine::get()->createPixelShader(shader_byte_code, size_shader);
 	GraphicsEngine::get()->releaseCompiledShader();
+
+	constant cc;
+	cc.time = 0;
+	m_cb = GraphicsEngine::get()->createConstantBuffer();
+	m_cb->load(&cc, sizeof(constant));
 }
 
 void AppWindow::onUpdate()
@@ -61,6 +74,13 @@ void AppWindow::onUpdate()
 	//SET VIEWPORT OF RENDER TARGET IN WHICH WE HAVE TO DRAW
 	RECT rc = this->getClientWindowRect();
 	GraphicsEngine::get()->getImmediateDeviceContext()->setViewportSize(rc.right - rc.left, rc.bottom - rc.top);
+
+	constant cc;
+	cc.time = ::GetTickCount();
+	m_cb->update(GraphicsEngine::get()->getImmediateDeviceContext(), &cc);
+	GraphicsEngine::get()->getImmediateDeviceContext()->setConstantBuffer(m_vertex_shader, m_cb);
+	GraphicsEngine::get()->getImmediateDeviceContext()->setConstantBuffer(m_pixel_shader, m_cb);
+
 	//SET DEFAULT SHADER IN THE GRAPHICS PIPELINE TO BE ABLE TO DRAW
 	GraphicsEngine::get()->getImmediateDeviceContext()->setVertexShader(m_vertex_shader);
 	GraphicsEngine::get()->getImmediateDeviceContext()->setPixelShader(m_pixel_shader);

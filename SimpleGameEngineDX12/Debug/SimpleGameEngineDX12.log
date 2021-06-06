@@ -1,4 +1,12 @@
 ﻿  AppWindow.cpp
+  ConstantBuffer.cpp
+  DeviceContext.cpp
+  GraphicsEngine.cpp
+  main.cpp
+  PixelShader.cpp
+  SwapChain.cpp
   VertexBuffer.cpp
+  VertexShader.cpp
+  Window.cpp
   Generating Code...
   SimpleGameEngineDX12.vcxproj -> D:\Projects\Simple-Game-Engine\SimpleGameEngineDX12\Debug\SimpleGameEngineDX12.exe
