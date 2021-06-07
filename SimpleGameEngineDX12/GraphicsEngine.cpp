@@ -5,8 +5,9 @@
 #include "ConstantBuffer.h"
 #include "VertexShader.h"
 #include "PixelShader.h"
-
+#include <iostream>
 #include <d3dcompiler.h>
+#pragma comment(lib, "d3dcompiler.lib")
 
 GraphicsEngine::GraphicsEngine()
 {
@@ -118,12 +119,12 @@ PixelShader* GraphicsEngine::createPixelShader(const void* shader_byte_code, siz
 bool GraphicsEngine::compileVertexShader(const wchar_t* filename, const char* entrypoint_name, void** shader_byte_code, size_t* byte_code_size)
 {
 	ID3DBlob* errblob = nullptr;
-	if(!SUCCEEDED(D3DCompileFromFile(filename, nullptr, nullptr, entrypoint_name, "vs_5_0", 0, 0, &m_blob, &errblob)))
+	HRESULT hr = D3DCompileFromFile(filename, nullptr, nullptr, entrypoint_name, "vs_5_0", 0, 0, &m_blob, &errblob);
+	if (!SUCCEEDED(hr))
 	{
 		if (errblob) errblob->Release();
 		return false;
 	}
-
 	*shader_byte_code = m_blob->GetBufferPointer();
 	*byte_code_size = m_blob->GetBufferSize();
 

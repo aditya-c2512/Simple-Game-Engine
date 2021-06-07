@@ -94,11 +94,11 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="PixelShader.hlsl">
-      <Filter>App</Filter>
-    </FxCompile>
-    <FxCompile Include="VertexShader.hlsl">
-      <Filter>App</Filter>
-    </FxCompile>
+    <None Include="VertexShader.hlsl">
+      <Filter>GameEngine\GraphicsEngine</Filter>
+    </None>
+    <None Include="PixelShader.hlsl">
+      <Filter>GameEngine\GraphicsEngine</Filter>
+    </None>
   </ItemGroup>
 </Project>

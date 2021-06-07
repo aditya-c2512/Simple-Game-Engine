@@ -11,6 +11,7 @@ struct vertex
 	vec3 position;
 	vec3 position1;
 	vec3 color;
+	vec3 color1;
 };
 
 __declspec(align(16))
@@ -38,18 +39,18 @@ void AppWindow::onCreate()
 
 	vertex list[] =
 	{
-		//X1 - Y1 - Z1 - X2 - Y2 - Z2 - R - G - B
-		{-0.5f, -0.5f, 0.0f,	-0.32f, -0.11f, 0.0f,	0.5f, 0.5f, 0.0f}, // POS1
-		{-0.5f, 0.5f, 0.0f,		-0.11f, 0.78f, 0.0f,	0.0f, 1.0f, 1.0f}, // POS2
-		{ 0.5f, -0.5f, 0.0f,	 0.75f, -0.73f, 0.0f,	0.5f, 0.0f, 0.5f}, // POS3
-		{ 0.5f, 0.5f, 0.0f,		 0.88f, 0.77f, 0.0f,	1.0f, 0.5f, 0.0f}, // POS4
+		//X1 - Y1 - Z1 - X2 - Y2 - Z2 - R1 - G1 - B1 - R2 - G2 - B2
+		{-0.5f, -0.5f, 0.0f,	-0.32f, -0.11f, 0.0f,	0.5f, 0.5f, 0.0f,	0.5f, 1.0f, 0.7f}, // POS1
+		{-0.5f, 0.5f, 0.0f,		-0.11f, 0.78f, 0.0f,	0.0f, 1.0f, 1.0f,	0.5f, 0.3f, 0.0f}, // POS2
+		{ 0.5f, -0.5f, 0.0f,	 0.75f, -0.73f, 0.0f,	0.5f, 0.0f, 0.5f,	0.0f, 0.5f, 1.0f}, // POS3
+		{ 0.5f, 0.5f, 0.0f,		 0.88f, 0.77f, 0.0f,	1.0f, 0.5f, 0.0f,	0.5f, 0.7f, 0.3f}, // POS4
 	};
 
 	m_vb = GraphicsEngine::get()->createVertexBuffer();
 	UINT size_list = ARRAYSIZE(list);
 
 	void* shader_byte_code = nullptr;
-	UINT size_shader = 0;
+	size_t size_shader = 0;
 
 	GraphicsEngine::get()->compileVertexShader(L"VertexShader.hlsl", "vsmain", &shader_byte_code, &size_shader);
 	m_vertex_shader = GraphicsEngine::get()->createVertexShader(shader_byte_code, size_shader);
