@@ -7,6 +7,9 @@ struct PS_INPUT
 
 cbuffer constant : register(b0)
 {
+	row_major float4x4 worldMatrix;
+	row_major float4x4 viewMatrix;
+	row_major float4x4 projectionMatrix;
 	unsigned int time;
 };
 

@@ -15,14 +15,22 @@ struct VS_OUTPUT
 
 cbuffer constant : register(b0)
 {
+	row_major float4x4 worldMatrix;
+	row_major float4x4 viewMatrix;
+	row_major float4x4 projectionMatrix;
 	unsigned int time;
 };
 
 VS_OUTPUT vsmain(VS_INPUT input)
 {
 	VS_OUTPUT output = (VS_OUTPUT)0;
-	output.pos = lerp(input.pos, input.pos1, (sin(time/1000.0)+1.0)/2.0);
+
+	output.pos = mul(input.pos, worldMatrix);//OBJECT SPACE TO WORLD SPACE
+	output.pos = mul(output.pos, viewMatrix);//WORLD SPACE TO VIEW SPACE
+	output.pos = mul(output.pos, projectionMatrix);//VIEW SPACE TO SCREEN SPACE
+
 	output.color = input.color;
 	output.color1 = input.color1;
+
 	return output;
 }
