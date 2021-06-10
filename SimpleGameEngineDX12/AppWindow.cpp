@@ -6,7 +6,6 @@
 struct vertex
 {
 	Vector3D position;
-	Vector3D position1;
 	Vector3D color;
 	Vector3D color1;
 };
@@ -17,7 +16,7 @@ struct constant
 	Matrix4x4 worldMatrix;
 	Matrix4x4 viewMatrix;
 	Matrix4x4 projectionMatrix;
-	unsigned int time;
+	DWORD time;
 };
 
 AppWindow::AppWindow()
@@ -37,24 +36,57 @@ void AppWindow::onCreate()
 	RECT rc = this->getClientWindowRect();
 	m_swap_chain->init(this->m_hwnd, rc.right - rc.left, rc.bottom - rc.top);
 
-	vertex list[] =
+	vertex vertex_list[] =
 	{
-		//X1 - Y1 - Z1 - X2 - Y2 - Z2 - R1 - G1 - B1 - R2 - G2 - B2
-		{Vector3D(-0.5f, -0.5f, 0.0f),	Vector3D(-0.32f, -0.11f, 0.0f),	Vector3D(0.5f, 0.5f, 0.0f),	Vector3D(0.5f, 1.0f, 0.7f)}, // POS1
-		{Vector3D(-0.5f, 0.5f, 0.0f),	Vector3D(-0.11f, 0.78f, 0.0f),	Vector3D(0.0f, 1.0f, 1.0f),	Vector3D(0.5f, 0.3f, 0.0f)}, // POS2
-		{Vector3D(0.5f, -0.5f, 0.0f),	Vector3D(0.75f, -0.73f, 0.0f),	Vector3D(0.5f, 0.0f, 0.5f),	Vector3D(0.0f, 0.5f, 1.0f)}, // POS3
-		{Vector3D(0.5f, 0.5f, 0.0f),	Vector3D(0.88f, 0.77f, 0.0f),	Vector3D(1.0f, 0.5f, 0.0f),	Vector3D(0.5f, 0.7f, 0.3f)}, // POS4
+		//X1 - Y1 - Z1 - R1 - G1 - B1 - R2 - G2 - B2
+		//FRONT FACE
+		{Vector3D(-0.5f, -0.5f, -0.5f),	Vector3D(1, 0, 0),	Vector3D(0.2f, 0, 0)}, // POS1
+		{Vector3D(-0.5f, 0.5f, -0.5f),	Vector3D(1, 1, 0),	Vector3D(0.2f, 0.2f, 0)}, // POS2
+		{Vector3D(0.5f, 0.5f, -0.5f),	Vector3D(1, 1, 0),	Vector3D(0.2f, 0.2f, 0)}, // POS3
+		{Vector3D(0.5f, -0.5f, -0.5f),	Vector3D(1, 0, 0),	Vector3D(0.2f, 0, 0)}, // POS4
+		//BACK FACE
+		{Vector3D(0.5f, -0.5f, 0.5f),	Vector3D(0, 1, 0),	Vector3D(0, 0.2f, 0)}, // POS5
+		{Vector3D(0.5f, 0.5f, 0.5f),	Vector3D(0, 1, 1),	Vector3D(0, 0.2f, 0.2f)},	// POS6
+		{Vector3D(-0.5f, 0.5f, 0.5f),	Vector3D(0, 1, 1),	Vector3D(1, 0.2f, 0.2f)},	// POS7
+		{Vector3D(-0.5f, -0.5f, 0.5f),	Vector3D(0, 1, 0),	Vector3D(0, 0.2f, 0.2f)},	// POS8
 	};
 
 	m_vb = GraphicsEngine::get()->createVertexBuffer();
-	UINT size_list = ARRAYSIZE(list);
+	UINT size_vertex_list = ARRAYSIZE(vertex_list);
+
+	unsigned int index_list[] =
+	{
+		//FRONT FACE
+		0,1,2,	//TRI 1
+		2,3,0,	//TRI 2
+		//BACK FACE
+		4,5,6,	//TRI 3
+		6,7,4,	//TRI 4
+		//TOP FACE
+		1,6,5,	//TRI 5
+		5,2,1,	//TRI 6
+		//BOTTOM FACE
+		7,0,3,	//TRI 7
+		3,4,7,	//TRI 8
+		//RIGHT FACE
+		3,2,5,	//TRI 9
+		5,4,3,	//TRI 10
+		//LEFT FACE
+		7,6,1,	//TRI 11
+		1,0,7 	//TRI 12
+	};
+
+	m_ib = GraphicsEngine::get()->createIndexBuffer();
+	UINT size_index_list = ARRAYSIZE(index_list);
+
+	m_ib->load(index_list, size_index_list);
 
 	void* shader_byte_code = nullptr;
 	size_t size_shader = 0;
 
 	GraphicsEngine::get()->compileVertexShader(L"VertexShader.hlsl", "vsmain", &shader_byte_code, &size_shader);
 	m_vertex_shader = GraphicsEngine::get()->createVertexShader(shader_byte_code, size_shader);
-	m_vb->load(list, sizeof(vertex), size_list, shader_byte_code, size_shader);
+	m_vb->load(vertex_list, sizeof(vertex), size_vertex_list, shader_byte_code, size_shader);
 	GraphicsEngine::get()->releaseCompiledShader();
 
 	GraphicsEngine::get()->compilePixelShader(L"PixelShader.hlsl", "psmain", &shader_byte_code, &size_shader);
@@ -85,9 +117,11 @@ void AppWindow::onUpdate()
 	GraphicsEngine::get()->getImmediateDeviceContext()->setPixelShader(m_pixel_shader);
 	//SET THE VERTICES OF THE TRIANGLE TO DRAW
 	GraphicsEngine::get()->getImmediateDeviceContext()->setVertexBuffer(m_vb);
+	//SET THE INDICES OF THE TRIANGLE TO DRAW
+	GraphicsEngine::get()->getImmediateDeviceContext()->setIndexBuffer(m_ib);
 
 	// FINALLY DRAW THE TRIANGLE
-	GraphicsEngine::get()->getImmediateDeviceContext()->drawTriangleStrip(m_vb->getSizeVertexList(), 0);
+	GraphicsEngine::get()->getImmediateDeviceContext()->drawIndexedTriangleList(m_ib->getSizeIndexList(), 0, 0);
 	m_swap_chain->present(true);
 
 	oldDelta = newDelta;
@@ -99,6 +133,8 @@ void AppWindow::onDestroy()
 {
 	Window::onDestroy();
 	m_vb->release();
+	m_ib->release();
+	m_cb->release();
 	m_swap_chain->release();
 	m_vertex_shader->release();
 	m_pixel_shader->release();
@@ -119,10 +155,18 @@ void AppWindow::updateQuadPosition()
 
 	Matrix4x4 temp;
 
-	deltaScale += deltaTime * 3.0f;
-	cc.worldMatrix.setScale(Vector3D::lerp(startScale, endScale, (sin(deltaScale)+1.0f)/2.0f));
+	deltaScale += deltaTime / 0.50f;
+	//cc.worldMatrix.setScale(Vector3D::lerp(startScale, endScale, (sin(deltaScale)+1.0f)/2.0f));
+	
+	//temp.setTranslation(Vector3D::lerp(startPos, endPos, deltaPos));
+	//cc.worldMatrix *= temp;
 
-	temp.setTranslation(Vector3D::lerp(startPos, endPos, deltaPos));
+	cc.worldMatrix.setScale(Vector3D(1, 1, 1));
+	temp.setRotationZ(deltaScale);
+	cc.worldMatrix *= temp;
+	temp.setRotationY(deltaScale);
+	cc.worldMatrix *= temp;
+	temp.setRotationX(deltaScale);
 	cc.worldMatrix *= temp;
 
 	cc.viewMatrix.setIdentity();

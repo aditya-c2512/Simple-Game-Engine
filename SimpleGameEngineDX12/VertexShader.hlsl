@@ -1,7 +1,6 @@
 struct VS_INPUT
 {
 	float4 pos : POSITION;
-	float4 pos1 : POSITION1;
 	float3 color : COLOR;
 	float3 color1 : COLOR1;
 };
@@ -18,7 +17,7 @@ cbuffer constant : register(b0)
 	row_major float4x4 worldMatrix;
 	row_major float4x4 viewMatrix;
 	row_major float4x4 projectionMatrix;
-	unsigned int time;
+	dword time;
 };
 
 VS_OUTPUT vsmain(VS_INPUT input)

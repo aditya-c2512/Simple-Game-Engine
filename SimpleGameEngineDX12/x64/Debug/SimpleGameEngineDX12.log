@@ -1,0 +1,14 @@
+﻿  AppWindow.cpp
+D:\Projects\Simple-Game-Engine\SimpleGameEngineDX12\Matrix4x4.h(46,18): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\Projects\Simple-Game-Engine\SimpleGameEngineDX12\Matrix4x4.h(47,18): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\Projects\Simple-Game-Engine\SimpleGameEngineDX12\Matrix4x4.h(48,15): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\Projects\Simple-Game-Engine\SimpleGameEngineDX12\Matrix4x4.h(49,18): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\Projects\Simple-Game-Engine\SimpleGameEngineDX12\Matrix4x4.h(55,18): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\Projects\Simple-Game-Engine\SimpleGameEngineDX12\Matrix4x4.h(56,18): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\Projects\Simple-Game-Engine\SimpleGameEngineDX12\Matrix4x4.h(57,15): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\Projects\Simple-Game-Engine\SimpleGameEngineDX12\Matrix4x4.h(58,18): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\Projects\Simple-Game-Engine\SimpleGameEngineDX12\Matrix4x4.h(64,18): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\Projects\Simple-Game-Engine\SimpleGameEngineDX12\Matrix4x4.h(65,18): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\Projects\Simple-Game-Engine\SimpleGameEngineDX12\Matrix4x4.h(66,15): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\Projects\Simple-Game-Engine\SimpleGameEngineDX12\Matrix4x4.h(67,18): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+  SimpleGameEngineDX12.vcxproj -> D:\Projects\Simple-Game-Engine\SimpleGameEngineDX12\x64\Debug\SimpleGameEngineDX12.exe

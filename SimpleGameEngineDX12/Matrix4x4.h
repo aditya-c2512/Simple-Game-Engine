@@ -40,6 +40,33 @@ public:
 		mat[3][2] = (-near_plane) / (far_plane - near_plane);
 	}
 
+	void setRotationX(float angle)
+	{
+		setIdentity();
+		mat[1][1] = cos(angle);
+		mat[2][2] = cos(angle);
+		mat[2][1] = -sin(angle);
+		mat[1][2] = sin(angle);
+	}
+
+	void setRotationY(float angle)
+	{
+		setIdentity();
+		mat[0][0] = cos(angle);
+		mat[2][2] = cos(angle);
+		mat[0][2] = -sin(angle);
+		mat[2][0] = sin(angle);
+	}
+
+	void setRotationZ(float angle)
+	{
+		setIdentity();
+		mat[0][0] = cos(angle);
+		mat[1][1] = cos(angle);
+		mat[1][0] = -sin(angle);
+		mat[0][1] = sin(angle);
+	}
+
 	void operator*=(const Matrix4x4& matrix)
 	{
 		Matrix4x4 out;
