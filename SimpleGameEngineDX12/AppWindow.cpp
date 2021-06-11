@@ -1,4 +1,5 @@
 #include "AppWindow.h"
+#include "InputSystem.h"
 #include "Vector3D.h"
 #include "Matrix4x4.h"
 #include <Windows.h>
@@ -16,7 +17,7 @@ struct constant
 	Matrix4x4 worldMatrix;
 	Matrix4x4 viewMatrix;
 	Matrix4x4 projectionMatrix;
-	DWORD time;
+	unsigned int time;
 };
 
 AppWindow::AppWindow()
@@ -30,6 +31,8 @@ AppWindow::~AppWindow()
 void AppWindow::onCreate()
 {
 	Window::onCreate();
+
+	InputSystem::get()->addListener(this);
 	GraphicsEngine::get()->init();
 	m_swap_chain = GraphicsEngine::get()->createSwapChain();
 
@@ -102,6 +105,9 @@ void AppWindow::onCreate()
 void AppWindow::onUpdate()
 {
 	Window::onUpdate();
+
+	InputSystem::get()->update();
+
 	//CLEAR THE RENDER TARGET 
 	GraphicsEngine::get()->getImmediateDeviceContext()->clearRenderTargetColor(this->m_swap_chain, 0.3f, 0.4f, 0.5f, 1);
 	//SET VIEWPORT OF RENDER TARGET IN WHICH WE HAVE TO DRAW
@@ -141,10 +147,20 @@ void AppWindow::onDestroy()
 	GraphicsEngine::get()->release();
 }
 
+void AppWindow::onFocus()
+{
+	InputSystem::get()->addListener(this);
+}
+
+void AppWindow::onKillFocus()
+{
+	InputSystem::get()->removeListener(this);
+}
+
 void AppWindow::updateQuadPosition()
 {
 	constant cc;
-	cc.time = newDelta;
+	
 	Vector3D startPos(-1.5, -1.5, 0);
 	Vector3D endPos(1.5, 1.5, 0);
 	Vector3D startScale(0.5, 0.5, 0);
@@ -156,17 +172,13 @@ void AppWindow::updateQuadPosition()
 	Matrix4x4 temp;
 
 	deltaScale += deltaTime / 0.50f;
-	//cc.worldMatrix.setScale(Vector3D::lerp(startScale, endScale, (sin(deltaScale)+1.0f)/2.0f));
-	
-	//temp.setTranslation(Vector3D::lerp(startPos, endPos, deltaPos));
-	//cc.worldMatrix *= temp;
-
-	cc.worldMatrix.setScale(Vector3D(1, 1, 1));
-	temp.setRotationZ(deltaScale);
+	cc.time = newDelta;
+	cc.worldMatrix.setScale(Vector3D(scale_cube, scale_cube, scale_cube));
+	temp.setRotationZ(0.0f);
 	cc.worldMatrix *= temp;
-	temp.setRotationY(deltaScale);
+	temp.setRotationY(rotate_y);
 	cc.worldMatrix *= temp;
-	temp.setRotationX(deltaScale);
+	temp.setRotationX(rotate_x);
 	cc.worldMatrix *= temp;
 
 	cc.viewMatrix.setIdentity();
@@ -176,4 +188,54 @@ void AppWindow::updateQuadPosition()
 		-4.0f, 4.0f
 	);
 	m_cb->update(GraphicsEngine::get()->getImmediateDeviceContext(), &cc);
+}
+
+void AppWindow::onKeyDown(int key)
+{
+	if (key == 'W')
+	{
+		rotate_x += 3.141f * deltaTime;
+	}
+	else if (key == 'S')
+	{
+		rotate_x -= 3.141f * deltaTime;
+	}
+	else if (key == 'A')
+	{
+		rotate_y += 3.141f * deltaTime;
+	}
+	else if (key == 'D')
+	{
+		rotate_y -= 3.141f * deltaTime;
+	}
+}
+
+void AppWindow::onKeyUp(int key)
+{
+}
+
+void AppWindow::onMouseMove(const Point& delta_mouse_pos)
+{
+	rotate_x -= 0.25 * delta_mouse_pos.y * deltaTime;
+	rotate_y -= 0.25 * delta_mouse_pos.x * deltaTime;
+}
+
+void AppWindow::onLeftMouseDown(const Point& mouse_pos)
+{
+	scale_cube = 0.5f;
+}
+
+void AppWindow::onLeftMouseUp(const Point& mouse_pos)
+{
+	scale_cube = 1.0f;
+}
+
+void AppWindow::onRightMouseDown(const Point& mouse_pos)
+{
+	scale_cube = 2.0f;
+}
+
+void AppWindow::onRightMouseUp(const Point& mouse_pos)
+{
+	scale_cube = 1.0f;
 }

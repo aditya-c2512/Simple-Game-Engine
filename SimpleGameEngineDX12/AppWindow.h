@@ -8,8 +8,9 @@
 #include "ConstantBuffer.h"
 #include "VertexShader.h"
 #include "PixelShader.h"
+#include "InputListener.h"
 
-class AppWindow : public Window
+class AppWindow : public Window, public InputListener
 {
 public:
 	AppWindow();
@@ -19,6 +20,18 @@ public:
 	virtual void onCreate() override;
 	virtual void onUpdate() override;
 	virtual void onDestroy() override;
+	virtual void onFocus() override;
+	virtual void onKillFocus() override;
+
+	// Inherited via InputListener
+	virtual void onKeyDown(int key) override;
+	virtual void onKeyUp(int key) override;
+
+	virtual void onMouseMove(const Point& delta_mouse_pos) override;
+	virtual void onLeftMouseDown(const Point& mouse_pos) override;
+	virtual void onLeftMouseUp(const Point& mouse_pos) override;
+	virtual void onRightMouseDown(const Point& mouse_pos) override;
+	virtual void onRightMouseUp(const Point& mouse_pos) override;
 
 	void updateQuadPosition();
 
@@ -30,10 +43,14 @@ private:
 	VertexShader* m_vertex_shader;
 	PixelShader* m_pixel_shader;
 
-	DWORD oldDelta;
-	DWORD newDelta;
+	unsigned int oldDelta;
+	unsigned int newDelta;
 	float deltaTime;
 	float deltaPos;
 	float deltaScale;
+
+	float rotate_x = 0.0f;
+	float rotate_y = 0.0f;
+	float scale_cube = 1.0f;
 };
 

@@ -17,7 +17,7 @@ cbuffer constant : register(b0)
 	row_major float4x4 worldMatrix;
 	row_major float4x4 viewMatrix;
 	row_major float4x4 projectionMatrix;
-	dword time;
+	unsigned int time;
 };
 
 VS_OUTPUT vsmain(VS_INPUT input)
