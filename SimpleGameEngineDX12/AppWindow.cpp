@@ -32,7 +32,10 @@ void AppWindow::onCreate()
 {
 	Window::onCreate();
 
+	world_camera.setTranslation(Vector3D(0, 0, -2));
+
 	InputSystem::get()->addListener(this);
+	InputSystem::get()->showCursor(false);
 	GraphicsEngine::get()->init();
 	m_swap_chain = GraphicsEngine::get()->createSwapChain();
 
@@ -114,7 +117,7 @@ void AppWindow::onUpdate()
 	RECT rc = this->getClientWindowRect();
 	GraphicsEngine::get()->getImmediateDeviceContext()->setViewportSize(rc.right - rc.left, rc.bottom - rc.top);
 
-	updateQuadPosition();
+	update();
 	GraphicsEngine::get()->getImmediateDeviceContext()->setConstantBuffer(m_vertex_shader, m_cb);
 	GraphicsEngine::get()->getImmediateDeviceContext()->setConstantBuffer(m_pixel_shader, m_cb);
 
@@ -157,36 +160,35 @@ void AppWindow::onKillFocus()
 	InputSystem::get()->removeListener(this);
 }
 
-void AppWindow::updateQuadPosition()
+void AppWindow::update()
 {
 	constant cc;
-	
-	Vector3D startPos(-1.5, -1.5, 0);
-	Vector3D endPos(1.5, 1.5, 0);
-	Vector3D startScale(0.5, 0.5, 0);
-	Vector3D endScale(1, 1, 0);
-
-	deltaPos += deltaTime * 0.3f;
-	if (deltaPos > 1.0f) deltaPos = 0.0f;
+	cc.time = newDelta;
 
 	Matrix4x4 temp;
 
-	deltaScale += deltaTime / 0.50f;
-	cc.time = newDelta;
-	cc.worldMatrix.setScale(Vector3D(scale_cube, scale_cube, scale_cube));
-	temp.setRotationZ(0.0f);
-	cc.worldMatrix *= temp;
-	temp.setRotationY(rotate_y);
-	cc.worldMatrix *= temp;
-	temp.setRotationX(rotate_x);
-	cc.worldMatrix *= temp;
+	cc.worldMatrix.setIdentity();
+	Matrix4x4 world_cam;
+	world_cam.setIdentity();
 
-	cc.viewMatrix.setIdentity();
-	cc.projectionMatrix.setOrthoProj(
-		(this->getClientWindowRect().right - this->getClientWindowRect().left) / 400.0f,
-		(this->getClientWindowRect().bottom - this->getClientWindowRect().top) / 400.0f,
-		-4.0f, 4.0f
-	);
+	temp.setIdentity();
+	temp.setRotationX(rotate_x);
+	world_cam *= temp;
+
+	temp.setIdentity();
+	temp.setRotationY(rotate_y);
+	world_cam *= temp;
+
+	Vector3D newPos = world_camera.getTranslation() + world_cam.getZDirection()*move_forward*0.1f + world_cam.getXDirection() * move_right * 0.1f;
+
+	world_cam.setTranslation(newPos);
+	world_camera = world_cam;
+	world_cam.inverse();
+
+	cc.viewMatrix = world_cam;
+	float aspectRatio = (this->getClientWindowRect().right - this->getClientWindowRect().left) / (this->getClientWindowRect().bottom - this->getClientWindowRect().top);
+	cc.projectionMatrix.setPerspectiveProj(1.57f, aspectRatio, 0.001f, 1000.0f);
+
 	m_cb->update(GraphicsEngine::get()->getImmediateDeviceContext(), &cc);
 }
 
@@ -194,30 +196,35 @@ void AppWindow::onKeyDown(int key)
 {
 	if (key == 'W')
 	{
-		rotate_x += 3.141f * deltaTime;
+		move_forward = 1.0f;
 	}
 	else if (key == 'S')
 	{
-		rotate_x -= 3.141f * deltaTime;
+		move_forward = -1.0f;
 	}
 	else if (key == 'A')
 	{
-		rotate_y += 3.141f * deltaTime;
+		move_right = -1.0f;
 	}
 	else if (key == 'D')
 	{
-		rotate_y -= 3.141f * deltaTime;
+		move_right = 1.0f;
 	}
 }
 
 void AppWindow::onKeyUp(int key)
 {
+	move_forward = move_right = 0.0f;
 }
 
-void AppWindow::onMouseMove(const Point& delta_mouse_pos)
+void AppWindow::onMouseMove(const Point& mouse_pos)
 {
-	rotate_x -= 0.25 * delta_mouse_pos.y * deltaTime;
-	rotate_y -= 0.25 * delta_mouse_pos.x * deltaTime;
+	int width = this->getClientWindowRect().right - this->getClientWindowRect().left;
+	int height = this->getClientWindowRect().bottom - this->getClientWindowRect().top;
+	rotate_x += 0.5 * (mouse_pos.y-height/2) * deltaTime;
+	rotate_y -= 0.5 * (mouse_pos.x-width/2) * deltaTime;
+
+	InputSystem::get()->setCursorPosition(Point(width / 2, height / 2));
 }
 
 void AppWindow::onLeftMouseDown(const Point& mouse_pos)

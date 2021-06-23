@@ -125,6 +125,9 @@
     <ClInclude Include="Point.h">
       <Filter>GameEngine\GraphicsEngine\Math</Filter>
     </ClInclude>
+    <ClInclude Include="Vector4D.h">
+      <Filter>GameEngine\GraphicsEngine\Math</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="VertexShader.hlsl">
