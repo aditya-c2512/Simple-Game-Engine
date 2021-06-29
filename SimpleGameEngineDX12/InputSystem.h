@@ -5,10 +5,11 @@
 
 class InputSystem
 {
-public :
+private :
 	InputSystem();
 	~InputSystem();
 
+public :
 	void update();
 	void addListener(InputListener* listener);
 	void removeListener(InputListener* listener);
@@ -17,6 +18,8 @@ public :
 	void showCursor(bool show);
 
 	static InputSystem* get();
+	static void create();
+	static void release();
 
 private :
 	std::map<InputListener*, InputListener*> listeners;
@@ -25,4 +28,6 @@ private :
 
 	Point old_mouse_pos;
 	bool first_time = true;
+
+	static InputSystem* ioSystem;
 };

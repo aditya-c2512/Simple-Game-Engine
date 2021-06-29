@@ -37,12 +37,12 @@ public:
 	void update();
 
 private:
-	SwapChain* m_swap_chain;
-	VertexBuffer* m_vb;
-	IndexBuffer* m_ib;
-	ConstantBuffer* m_cb;
-	VertexShader* m_vertex_shader;
-	PixelShader* m_pixel_shader;
+	SwapChainPtr m_swap_chain;
+	VertexBufferPtr m_vb;
+	IndexBufferPtr m_ib;
+	ConstantBufferPtr m_cb;
+	VertexShaderPtr m_vertex_shader;
+	PixelShaderPtr m_pixel_shader;
 
 	unsigned int oldDelta;
 	unsigned int newDelta;

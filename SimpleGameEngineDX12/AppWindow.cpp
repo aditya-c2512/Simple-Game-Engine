@@ -36,7 +36,7 @@ void AppWindow::onCreate()
 
 	InputSystem::get()->addListener(this);
 	InputSystem::get()->showCursor(false);
-	GraphicsEngine::get()->init();
+
 	RECT rc = this->getClientWindowRect();
 	m_swap_chain = GraphicsEngine::get()->getRenderSystem()->createSwapChain(this->m_hwnd, rc.right - rc.left, rc.bottom - rc.top);
 
@@ -135,7 +135,6 @@ void AppWindow::onUpdate()
 void AppWindow::onDestroy()
 {
 	Window::onDestroy();
-	GraphicsEngine::get()->release();
 }
 
 void AppWindow::onFocus()
@@ -209,8 +208,8 @@ void AppWindow::onMouseMove(const Point& mouse_pos)
 {
 	int width = this->getClientWindowRect().right - this->getClientWindowRect().left;
 	int height = this->getClientWindowRect().bottom - this->getClientWindowRect().top;
-	rotate_x += 0.15 * (mouse_pos.y - height / 2) * deltaTime;
-	rotate_y += 0.15 * (mouse_pos.x - width / 2) * deltaTime;
+	rotate_x += 0.15 * (mouse_pos.y - height / 2.0f) * deltaTime;
+	rotate_y += 0.15 * (mouse_pos.x - width / 2.0f) * deltaTime;
 
 	InputSystem::get()->setCursorPosition(Point(width / 2, height / 2));
 }

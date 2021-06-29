@@ -1,12 +1,15 @@
 #include "InputSystem.h"
 #include <Windows.h>
 
+InputSystem* InputSystem::ioSystem = nullptr;
+
 InputSystem::InputSystem()
 {
 }
 
 InputSystem::~InputSystem()
 {
+    InputSystem::ioSystem = nullptr;
 }
 
 void InputSystem::update()
@@ -101,6 +104,17 @@ void InputSystem::showCursor(bool show)
 
 InputSystem* InputSystem::get()
 {
-    static InputSystem ioSystem;
-    return &ioSystem;
+    return ioSystem;
+}
+
+void InputSystem::create()
+{
+    if (InputSystem::ioSystem) throw std::exception("ONE INSTANCE OF INPUT SYSTEM ALREADY RUNNING");
+    InputSystem::ioSystem = new InputSystem();
+}
+
+void InputSystem::release()
+{
+    if (!InputSystem::ioSystem) throw std::exception("INPUT SYSTEM ALREADY RELEASED");
+    delete InputSystem::ioSystem;
 }
