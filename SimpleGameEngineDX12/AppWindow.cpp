@@ -1,5 +1,6 @@
 #include "AppWindow.h"
 #include "InputSystem.h"
+#include "Vector2D.h"
 #include "Vector3D.h"
 #include "Matrix4x4.h"
 #include <Windows.h>
@@ -7,8 +8,7 @@
 struct vertex
 {
 	Vector3D position;
-	Vector3D color;
-	Vector3D color1;
+	Vector2D texcoord;
 };
 
 __declspec(align(16))
@@ -37,25 +37,67 @@ void AppWindow::onCreate()
 	InputSystem::get()->addListener(this);
 	InputSystem::get()->showCursor(false);
 
+	TEX_wood = GraphicsEngine::get()->getTextureManager()->createTextureFromFile(L"assets\\Textures\\wall.jpg");
+
 	RECT rc = this->getClientWindowRect();
 	m_swap_chain = GraphicsEngine::get()->getRenderSystem()->createSwapChain(this->m_hwnd, rc.right - rc.left, rc.bottom - rc.top);
 
-	vertex vertex_list[] =
+	Vector3D position_list[] =
 	{
-		//X1 - Y1 - Z1 - R1 - G1 - B1 - R2 - G2 - B2
+		//X1 - Y1 - Z1 
 		//FRONT FACE
-		{Vector3D(-0.5f, -0.5f, -0.5f),	Vector3D(1, 0, 0),	Vector3D(0.2f, 0, 0)}, // POS1
-		{Vector3D(-0.5f, 0.5f, -0.5f),	Vector3D(1, 1, 0),	Vector3D(0.2f, 0.2f, 0)}, // POS2
-		{Vector3D(0.5f, 0.5f, -0.5f),	Vector3D(1, 1, 0),	Vector3D(0.2f, 0.2f, 0)}, // POS3
-		{Vector3D(0.5f, -0.5f, -0.5f),	Vector3D(1, 0, 0),	Vector3D(0.2f, 0, 0)}, // POS4
+		Vector3D(-0.5f, -0.5f, -0.5f),	
+		Vector3D(-0.5f, 0.5f, -0.5f),	
+		Vector3D(0.5f, 0.5f, -0.5f),	
+		Vector3D(0.5f, -0.5f, -0.5f),	
 		//BACK FACE
-		{Vector3D(0.5f, -0.5f, 0.5f),	Vector3D(0, 1, 0),	Vector3D(0, 0.2f, 0)}, // POS5
-		{Vector3D(0.5f, 0.5f, 0.5f),	Vector3D(0, 1, 1),	Vector3D(0, 0.2f, 0.2f)},	// POS6
-		{Vector3D(-0.5f, 0.5f, 0.5f),	Vector3D(0, 1, 1),	Vector3D(1, 0.2f, 0.2f)},	// POS7
-		{Vector3D(-0.5f, -0.5f, 0.5f),	Vector3D(0, 1, 0),	Vector3D(0, 0.2f, 0.2f)},	// POS8
+		Vector3D(0.5f, -0.5f, 0.5f),	
+		Vector3D(0.5f, 0.5f, 0.5f),	
+		Vector3D(-0.5f, 0.5f, 0.5f),	
+		Vector3D(-0.5f, -0.5f, 0.5f),	
+	};
+	Vector2D texcoord_list[] =
+	{
+		//X1 - Y1 - Z1 
+		//FRONT FACE
+		Vector2D(0,0),
+		Vector2D(0,1),
+		Vector2D(1,0),
+		Vector2D(1,1),
 	};
 
-	
+	vertex vertex_list[] =
+	{
+		{position_list[0],texcoord_list[1]},
+		{position_list[1],texcoord_list[0]},
+		{position_list[2],texcoord_list[2]},
+		{position_list[3],texcoord_list[3]},
+
+		{position_list[4],texcoord_list[1]},
+		{position_list[5],texcoord_list[0]},
+		{position_list[6],texcoord_list[2]},
+		{position_list[7],texcoord_list[3]},
+
+		{position_list[1],texcoord_list[1]},
+		{position_list[6],texcoord_list[0]},
+		{position_list[5],texcoord_list[2]},
+		{position_list[2],texcoord_list[3]},
+
+		{position_list[7],texcoord_list[1]},
+		{position_list[0],texcoord_list[0]},
+		{position_list[3],texcoord_list[2]},
+		{position_list[4],texcoord_list[3]},
+
+		{position_list[3],texcoord_list[1]},
+		{position_list[2],texcoord_list[0]},
+		{position_list[5],texcoord_list[2]},
+		{position_list[4],texcoord_list[3]},
+
+		{position_list[7],texcoord_list[1]},
+		{position_list[6],texcoord_list[0]},
+		{position_list[1],texcoord_list[2]},
+		{position_list[0],texcoord_list[3]},
+	};
 	UINT size_vertex_list = ARRAYSIZE(vertex_list);
 
 	unsigned int index_list[] =
@@ -67,17 +109,17 @@ void AppWindow::onCreate()
 		4,5,6,	//TRI 3
 		6,7,4,	//TRI 4
 		//TOP FACE
-		1,6,5,	//TRI 5
-		5,2,1,	//TRI 6
+		8,9,10,	//TRI 5
+		10,11,8,	//TRI 6
 		//BOTTOM FACE
-		7,0,3,	//TRI 7
-		3,4,7,	//TRI 8
+		12,13,14,	//TRI 7
+		14,15,12,	//TRI 8
 		//RIGHT FACE
-		3,2,5,	//TRI 9
-		5,4,3,	//TRI 10
+		16,17,18,	//TRI 9
+		18,19,16,	//TRI 10
 		//LEFT FACE
-		7,6,1,	//TRI 11
-		1,0,7 	//TRI 12
+		20,21,22,	//TRI 11
+		22,23,20 	//TRI 12
 	};
 	UINT size_index_list = ARRAYSIZE(index_list);
 	m_ib = GraphicsEngine::get()->getRenderSystem()->createIndexBuffer(index_list, size_index_list);
@@ -118,6 +160,10 @@ void AppWindow::onUpdate()
 	//SET DEFAULT SHADER IN THE GRAPHICS PIPELINE TO BE ABLE TO DRAW
 	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setVertexShader(m_vertex_shader);
 	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setPixelShader(m_pixel_shader);
+
+	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setTexture(m_vertex_shader, TEX_wood);
+	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setTexture(m_pixel_shader, TEX_wood);
+
 	//SET THE VERTICES OF THE TRIANGLE TO DRAW
 	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setVertexBuffer(m_vb);
 	//SET THE INDICES OF THE TRIANGLE TO DRAW
@@ -208,8 +254,8 @@ void AppWindow::onMouseMove(const Point& mouse_pos)
 {
 	int width = this->getClientWindowRect().right - this->getClientWindowRect().left;
 	int height = this->getClientWindowRect().bottom - this->getClientWindowRect().top;
-	rotate_x += 0.15 * (mouse_pos.y - height / 2.0f) * deltaTime;
-	rotate_y += 0.15 * (mouse_pos.x - width / 2.0f) * deltaTime;
+	rotate_x += 0.3 * (mouse_pos.y - height / 2.0f) * deltaTime;
+	rotate_y += 0.3 * (mouse_pos.x - width / 2.0f) * deltaTime;
 
 	InputSystem::get()->setCursorPosition(Point(width / 2, height / 2));
 }

@@ -13,16 +13,31 @@ GraphicsEngine::GraphicsEngine()
 	{
 		throw std::exception("FAILED TO INITIALIZE GRAPHICS ENGINE");
 	}
+
+	try
+	{
+		texture_manager = new TextureManager();
+	}
+	catch (...)
+	{
+		throw std::exception("FAILED TO INITIALIZE TEXTURE MANAGER");
+	}
 }
 GraphicsEngine::~GraphicsEngine()
 {
 	GraphicsEngine::graphics_engine = nullptr;
+	delete texture_manager;
 	delete render_system;
 }
 
 RenderSystem* GraphicsEngine::getRenderSystem()
 {
 	return render_system;
+}
+
+TextureManager* GraphicsEngine::getTextureManager()
+{
+	return texture_manager;
 }
 
 GraphicsEngine* GraphicsEngine::get()

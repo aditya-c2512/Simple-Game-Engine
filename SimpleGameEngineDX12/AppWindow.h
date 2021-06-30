@@ -44,6 +44,8 @@ private:
 	VertexShaderPtr m_vertex_shader;
 	PixelShaderPtr m_pixel_shader;
 
+	TexturePtr TEX_wood;
+
 	unsigned int oldDelta;
 	unsigned int newDelta;
 	float deltaTime;
