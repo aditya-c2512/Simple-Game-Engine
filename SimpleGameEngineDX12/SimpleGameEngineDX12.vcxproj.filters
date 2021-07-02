@@ -49,6 +49,9 @@
     <Filter Include="GameEngine\GraphicsEngine\ResourceManager\TextureManager">
       <UniqueIdentifier>{d53705f8-6e67-4cb6-94ff-2488f970611f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="GameEngine\GraphicsEngine\ResourceManager\MeshManager">
+      <UniqueIdentifier>{d95cf2ee-360b-4580-8025-62fc000a3363}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -101,6 +104,12 @@
     </ClCompile>
     <ClCompile Include="TextureManager.cpp">
       <Filter>GameEngine\GraphicsEngine\ResourceManager\TextureManager</Filter>
+    </ClCompile>
+    <ClCompile Include="Mesh.cpp">
+      <Filter>GameEngine\GraphicsEngine\ResourceManager\MeshManager</Filter>
+    </ClCompile>
+    <ClCompile Include="MeshManager.cpp">
+      <Filter>GameEngine\GraphicsEngine\ResourceManager\MeshManager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -173,6 +182,15 @@
     <ClInclude Include="Vector2D.h">
       <Filter>GameEngine\GraphicsEngine\Math</Filter>
     </ClInclude>
+    <ClInclude Include="Mesh.h">
+      <Filter>GameEngine\GraphicsEngine\ResourceManager\MeshManager</Filter>
+    </ClInclude>
+    <ClInclude Include="MeshManager.h">
+      <Filter>GameEngine\GraphicsEngine\ResourceManager\MeshManager</Filter>
+    </ClInclude>
+    <ClInclude Include="VertexMesh.h">
+      <Filter>GameEngine\GraphicsEngine\Math</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="VertexShader.hlsl">
@@ -181,5 +199,10 @@
     <None Include="PixelShader.hlsl">
       <Filter>GameEngine\GraphicsEngine</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="VertexMeshLayout.hlsl">
+      <Filter>GameEngine\GraphicsEngine\RenderSystem\VertexShader</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

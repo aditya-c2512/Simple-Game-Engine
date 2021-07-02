@@ -45,6 +45,7 @@ private:
 	PixelShaderPtr m_pixel_shader;
 
 	TexturePtr TEX_wood;
+	MeshPtr SM_mesh;
 
 	unsigned int oldDelta;
 	unsigned int newDelta;
