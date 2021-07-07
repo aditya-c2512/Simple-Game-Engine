@@ -56,6 +56,7 @@ private:
 	float scale_cube = 1.0f;
 	float move_forward = 0.0f;
 	float move_right = 0.0f;
+	float rotate_light_y = 0.0f;
 
 	Matrix4x4 world_camera;
 };

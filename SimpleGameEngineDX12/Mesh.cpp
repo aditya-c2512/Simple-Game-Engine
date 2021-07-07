@@ -53,10 +53,14 @@ Mesh::Mesh(const wchar_t* fp) : Resource(fp)
 				tinyobj::real_t tx = attribs.texcoords[index.texcoord_index * 2 + 0];
 				tinyobj::real_t ty = attribs.texcoords[index.texcoord_index * 2 + 1];
 
-				VertexMesh vertex(Vector3D(vx, vy, vz), Vector2D(tx, ty));
+				tinyobj::real_t nx = attribs.normals[index.normal_index * 3 + 0];
+				tinyobj::real_t ny = attribs.normals[index.normal_index * 3 + 1];
+				tinyobj::real_t nz = attribs.normals[index.normal_index * 3 + 2];
+
+				VertexMesh vertex(Vector3D(vx, vy, vz), Vector2D(tx, ty), Vector3D(nx, ny, nz));
 
 				list_vertices.push_back(vertex);
-				list_indices.push_back(index_offset + v);
+				list_indices.push_back((unsigned int)index_offset + v);
 			}
 
 			index_offset += num_face_vertices;

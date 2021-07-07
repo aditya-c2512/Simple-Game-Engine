@@ -2,6 +2,7 @@
 #include "InputSystem.h"
 #include "Vector2D.h"
 #include "Vector3D.h"
+#include "Vector4D.h"
 #include "Matrix4x4.h"
 #include "Mesh.h"
 
@@ -19,7 +20,8 @@ struct constant
 	Matrix4x4 worldMatrix;
 	Matrix4x4 viewMatrix;
 	Matrix4x4 projectionMatrix;
-	unsigned int time;
+	Vector4D light_direction;
+	Vector4D camera_position;
 };
 
 AppWindow::AppWindow()
@@ -39,100 +41,17 @@ void AppWindow::onCreate()
 	InputSystem::get()->addListener(this);
 	InputSystem::get()->showCursor(false);
 
-	TEX_wood = GraphicsEngine::get()->getTextureManager()->createTextureFromFile(L"assets\\Textures\\brick.png");
+	TEX_wood = GraphicsEngine::get()->getTextureManager()->createTextureFromFile(L"assets\\Textures\\porcelain.jpg");
 	SM_mesh = GraphicsEngine::get()->getMeshManager()->createMeshFromFile(L"assets\\Meshes\\teapot.obj");
 
 	RECT rc = this->getClientWindowRect();
 	m_swap_chain = GraphicsEngine::get()->getRenderSystem()->createSwapChain(this->m_hwnd, rc.right - rc.left, rc.bottom - rc.top);
-
-	Vector3D position_list[] =
-	{
-		//X1 - Y1 - Z1 
-		//FRONT FACE
-		Vector3D(-0.5f, -0.5f, -0.5f),	
-		Vector3D(-0.5f, 0.5f, -0.5f),	
-		Vector3D(0.5f, 0.5f, -0.5f),	
-		Vector3D(0.5f, -0.5f, -0.5f),	
-		//BACK FACE
-		Vector3D(0.5f, -0.5f, 0.5f),	
-		Vector3D(0.5f, 0.5f, 0.5f),	
-		Vector3D(-0.5f, 0.5f, 0.5f),	
-		Vector3D(-0.5f, -0.5f, 0.5f),	
-	};
-	Vector2D texcoord_list[] =
-	{
-		//X1 - Y1 - Z1 
-		//FRONT FACE
-		Vector2D(0,0),
-		Vector2D(0,1),
-		Vector2D(1,0),
-		Vector2D(1,1),
-	};
-
-	vertex vertex_list[] =
-	{
-		{position_list[0],texcoord_list[1]},
-		{position_list[1],texcoord_list[0]},
-		{position_list[2],texcoord_list[2]},
-		{position_list[3],texcoord_list[3]},
-
-		{position_list[4],texcoord_list[1]},
-		{position_list[5],texcoord_list[0]},
-		{position_list[6],texcoord_list[2]},
-		{position_list[7],texcoord_list[3]},
-
-		{position_list[1],texcoord_list[1]},
-		{position_list[6],texcoord_list[0]},
-		{position_list[5],texcoord_list[2]},
-		{position_list[2],texcoord_list[3]},
-
-		{position_list[7],texcoord_list[1]},
-		{position_list[0],texcoord_list[0]},
-		{position_list[3],texcoord_list[2]},
-		{position_list[4],texcoord_list[3]},
-
-		{position_list[3],texcoord_list[1]},
-		{position_list[2],texcoord_list[0]},
-		{position_list[5],texcoord_list[2]},
-		{position_list[4],texcoord_list[3]},
-
-		{position_list[7],texcoord_list[1]},
-		{position_list[6],texcoord_list[0]},
-		{position_list[1],texcoord_list[2]},
-		{position_list[0],texcoord_list[3]},
-	};
-	UINT size_vertex_list = ARRAYSIZE(vertex_list);
-
-	unsigned int index_list[] =
-	{
-		//FRONT FACE
-		0,1,2,	//TRI 1
-		2,3,0,	//TRI 2
-		//BACK FACE
-		4,5,6,	//TRI 3
-		6,7,4,	//TRI 4
-		//TOP FACE
-		8,9,10,	//TRI 5
-		10,11,8,	//TRI 6
-		//BOTTOM FACE
-		12,13,14,	//TRI 7
-		14,15,12,	//TRI 8
-		//RIGHT FACE
-		16,17,18,	//TRI 9
-		18,19,16,	//TRI 10
-		//LEFT FACE
-		20,21,22,	//TRI 11
-		22,23,20 	//TRI 12
-	};
-	UINT size_index_list = ARRAYSIZE(index_list);
-	m_ib = GraphicsEngine::get()->getRenderSystem()->createIndexBuffer(index_list, size_index_list);
 
 	void* shader_byte_code = nullptr;
 	size_t size_shader = 0;
 
 	GraphicsEngine::get()->getRenderSystem()->compileVertexShader(L"VertexShader.hlsl", "vsmain", &shader_byte_code, &size_shader);
 	m_vertex_shader = GraphicsEngine::get()->getRenderSystem()->createVertexShader(shader_byte_code, size_shader);
-	m_vb = GraphicsEngine::get()->getRenderSystem()->createVertexBuffer(vertex_list, sizeof(vertex), size_vertex_list, shader_byte_code, size_shader);
 	GraphicsEngine::get()->getRenderSystem()->releaseCompiledShader();
 
 	GraphicsEngine::get()->getRenderSystem()->compilePixelShader(L"PixelShader.hlsl", "psmain", &shader_byte_code, &size_shader);
@@ -140,7 +59,6 @@ void AppWindow::onCreate()
 	GraphicsEngine::get()->getRenderSystem()->releaseCompiledShader();
 
 	constant cc;
-	cc.time = 0;
 	m_cb = GraphicsEngine::get()->getRenderSystem()->createConstantBuffer(&cc, sizeof(constant));
 }
 
@@ -199,9 +117,15 @@ void AppWindow::onKillFocus()
 void AppWindow::update()
 {
 	constant cc;
-	cc.time = newDelta;
 
 	Matrix4x4 temp;
+
+	Matrix4x4 light_rot;
+	light_rot.setIdentity();
+	light_rot.setRotationY(rotate_light_y);
+	rotate_light_y += 0.707f * deltaTime;
+
+	cc.light_direction = light_rot.getZDirection();
 
 	cc.worldMatrix.setIdentity();
 	Matrix4x4 world_cam;
@@ -215,15 +139,18 @@ void AppWindow::update()
 	temp.setRotationY(rotate_y);
 	world_cam *= temp;
 
-	Vector3D newPos = world_camera.getTranslation() + world_cam.getZDirection()*move_forward*0.1f + world_cam.getXDirection() * move_right * 0.1f;
+	Vector3D newPos = world_camera.getTranslation() + world_cam.getZDirection() * move_forward * 0.01f + world_cam.getXDirection() * move_right * 0.01f;
 
 	world_cam.setTranslation(newPos);
+
+	cc.camera_position = newPos;
+
 	world_camera = world_cam;
 	world_cam.inverse();
 
 	cc.viewMatrix = world_cam;
 	float aspectRatio = (this->getClientWindowRect().right - this->getClientWindowRect().left) / (this->getClientWindowRect().bottom - this->getClientWindowRect().top);
-	cc.projectionMatrix.setPerspectiveProj(1.57f, aspectRatio, 0.001f, 1000.0f);
+	cc.projectionMatrix.setPerspectiveProj(1.57f, aspectRatio, 0.000001f, 100.0f);
 
 	m_cb->update(GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext(), &cc);
 }
