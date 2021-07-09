@@ -32,7 +32,7 @@ Mesh::Mesh(const wchar_t* fp) : Resource(fp)
 	}
 
 	std::vector<VertexMesh> list_vertices;
-	std::vector<unsigned int> list_indices;
+	std::vector<unsigned long int> list_indices;
 
 	for (size_t s = 0; s < shapes.size(); s++)
 	{
