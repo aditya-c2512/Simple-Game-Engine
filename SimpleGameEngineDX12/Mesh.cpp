@@ -32,7 +32,7 @@ Mesh::Mesh(const wchar_t* fp) : Resource(fp)
 	}
 
 	std::vector<VertexMesh> list_vertices;
-	std::vector<unsigned long int> list_indices;
+	std::vector<unsigned int> list_indices;
 
 	for (size_t s = 0; s < shapes.size(); s++)
 	{
@@ -46,21 +46,28 @@ Mesh::Mesh(const wchar_t* fp) : Resource(fp)
 			for (unsigned char v = 0; v < num_face_vertices; v++)
 			{
 				tinyobj::index_t index = shapes[s].mesh.indices[index_offset + v];
-				tinyobj::real_t vx = attribs.vertices[index.vertex_index * 3 + 0];
-				tinyobj::real_t vy = attribs.vertices[index.vertex_index * 3 + 1];
-				tinyobj::real_t vz = attribs.vertices[index.vertex_index * 3 + 2];
+				tinyobj::real_t vx = attribs.vertices[size_t(index.vertex_index) * 3 + 0];
+				tinyobj::real_t vy = attribs.vertices[size_t(index.vertex_index) * 3 + 1];
+				tinyobj::real_t vz = attribs.vertices[size_t(index.vertex_index) * 3 + 2];
 
-				tinyobj::real_t tx = attribs.texcoords[index.texcoord_index * 2 + 0];
-				tinyobj::real_t ty = attribs.texcoords[index.texcoord_index * 2 + 1];
+				tinyobj::real_t tx, ty, nx, ny, nz;
+				tx = ty = nx = ny = nz = 0;
+				if (index.texcoord_index >= 0)
+				{
+					tx = attribs.texcoords[size_t(index.texcoord_index) * 2 + 0];
+					ty = attribs.texcoords[size_t(index.texcoord_index) * 2 + 1];
+				}
 
-				tinyobj::real_t nx = attribs.normals[index.normal_index * 3 + 0];
-				tinyobj::real_t ny = attribs.normals[index.normal_index * 3 + 1];
-				tinyobj::real_t nz = attribs.normals[index.normal_index * 3 + 2];
-
+				if (index.normal_index >= 0)
+				{
+					nx = attribs.normals[size_t(index.normal_index) * 3 + 0];
+					ny = attribs.normals[size_t(index.normal_index) * 3 + 1];
+					nz = attribs.normals[size_t(index.normal_index) * 3 + 2];
+				}
 				VertexMesh vertex(Vector3D(vx, vy, vz), Vector2D(tx, ty), Vector3D(nx, ny, nz));
 
 				list_vertices.push_back(vertex);
-				list_indices.push_back((unsigned int)index_offset + v);
+				list_indices.push_back((unsigned int)(index_offset + v));
 			}
 
 			index_offset += num_face_vertices;
