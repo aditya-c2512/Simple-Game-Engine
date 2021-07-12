@@ -23,12 +23,12 @@ float4 psmain(PS_INPUT input) : SV_TARGET
 	float3 ia = float3(1, 1, 1);
 	float3 ambient = ka * ia;
 
-	float kd = 1.0f;
-	float3 id = float3(1, 1, 1);
-	//float3 id = (Texture.Sample(TextureSampler, input.texcoord)).xyz;
+	float kd = 0.75f;
+	//float3 id = float3(1, 1, 1);
+	float3 id = (Texture.Sample(TextureSampler, input.texcoord)).xyz;
 	float3 diffuse = kd * max(dot(light_direction.xyz, input.normal), 0) * id;
 
-	float ks = 1.0f;
+	float ks = 0.75f;
 	float3 is = float3(1, 1, 1);
 	float glossy = 20.0f;
 	float3 halfway = normalize(-input.camera_direction + light_direction.xyz);
@@ -38,5 +38,4 @@ float4 psmain(PS_INPUT input) : SV_TARGET
 	float3 final_color = ambient + diffuse + specular;
 
 	return float4(final_color, 1.0);
-	//return Texture.Sample(TextureSampler, input.texcoord*0.5);
 }

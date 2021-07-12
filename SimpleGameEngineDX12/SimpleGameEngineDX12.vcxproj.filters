@@ -204,5 +204,8 @@
     <FxCompile Include="VertexMeshLayout.hlsl">
       <Filter>GameEngine\GraphicsEngine\RenderSystem\VertexShader</Filter>
     </FxCompile>
+    <FxCompile Include="SkyPixelShader.hlsl">
+      <Filter>GameEngine\GraphicsEngine</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

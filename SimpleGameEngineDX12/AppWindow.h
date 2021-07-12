@@ -35,17 +35,25 @@ public:
 	virtual void onRightMouseUp(const Point& mouse_pos) override;
 
 	void update();
+	void updateCamera();
+	void updateModel();
+	void updateSkyBox();
+	void drawMesh(const MeshPtr& mesh, const VertexShaderPtr& vs, const PixelShaderPtr& ps, const ConstantBufferPtr& cb, const TexturePtr& texture);
 
 private:
 	SwapChainPtr m_swap_chain;
 	VertexBufferPtr m_vb;
 	IndexBufferPtr m_ib;
 	ConstantBufferPtr m_cb;
+	ConstantBufferPtr m_sky_cb;
 	VertexShaderPtr m_vertex_shader;
 	PixelShaderPtr m_pixel_shader;
+	PixelShaderPtr m_sky_pixel_shader;
 
 	TexturePtr TEX_wood;
+	TexturePtr TEX_sky;
 	MeshPtr SM_mesh;
+	MeshPtr SM_sky_mesh;
 
 	unsigned int oldDelta;
 	unsigned int newDelta;
@@ -59,5 +67,7 @@ private:
 	float rotate_light_y = 0.0f;
 
 	Matrix4x4 world_camera;
+	Matrix4x4 view_camera;
+	Matrix4x4 projection_camera;
 };
 

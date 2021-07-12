@@ -42,7 +42,10 @@ void AppWindow::onCreate()
 	InputSystem::get()->showCursor(false);
 
 	TEX_wood = GraphicsEngine::get()->getTextureManager()->createTextureFromFile(L"assets\\Textures\\sand.jpg");
-	SM_mesh = GraphicsEngine::get()->getMeshManager()->createMeshFromFile(L"assets\\Meshes\\dragon.obj");
+	SM_mesh = GraphicsEngine::get()->getMeshManager()->createMeshFromFile(L"assets\\Meshes\\suzanne.obj");
+
+	TEX_sky = GraphicsEngine::get()->getTextureManager()->createTextureFromFile(L"assets\\Textures\\hdri_skybox.png");
+	SM_sky_mesh = GraphicsEngine::get()->getMeshManager()->createMeshFromFile(L"assets\\Meshes\\sphere.obj");
 
 	RECT rc = this->getClientWindowRect();
 	m_swap_chain = GraphicsEngine::get()->getRenderSystem()->createSwapChain(this->m_hwnd, rc.right - rc.left, rc.bottom - rc.top);
@@ -56,10 +59,15 @@ void AppWindow::onCreate()
 
 	GraphicsEngine::get()->getRenderSystem()->compilePixelShader(L"PixelShader.hlsl", "psmain", &shader_byte_code, &size_shader);
 	m_pixel_shader = GraphicsEngine::get()->getRenderSystem()->createPixelShader(shader_byte_code, size_shader);
+
+	GraphicsEngine::get()->getRenderSystem()->compilePixelShader(L"SkyPixelShader.hlsl", "psmain", &shader_byte_code, &size_shader);
+	m_sky_pixel_shader = GraphicsEngine::get()->getRenderSystem()->createPixelShader(shader_byte_code, size_shader);
+
 	GraphicsEngine::get()->getRenderSystem()->releaseCompiledShader();
 
 	constant cc;
 	m_cb = GraphicsEngine::get()->getRenderSystem()->createConstantBuffer(&cc, sizeof(constant));
+	m_sky_cb = GraphicsEngine::get()->getRenderSystem()->createConstantBuffer(&cc, sizeof(constant));
 }
 
 void AppWindow::onUpdate()
@@ -75,23 +83,13 @@ void AppWindow::onUpdate()
 	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setViewportSize(rc.right - rc.left, rc.bottom - rc.top);
 
 	update();
-	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setConstantBuffer(m_vertex_shader, m_cb);
-	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setConstantBuffer(m_pixel_shader, m_cb);
 
-	//SET DEFAULT SHADER IN THE GRAPHICS PIPELINE TO BE ABLE TO DRAW
-	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setVertexShader(m_vertex_shader);
-	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setPixelShader(m_pixel_shader);
+	GraphicsEngine::get()->getRenderSystem()->setRasterizerState(false);
+	drawMesh(SM_mesh, m_vertex_shader, m_pixel_shader, m_cb, TEX_wood);
 
-	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setTexture(m_vertex_shader, TEX_wood);
-	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setTexture(m_pixel_shader, TEX_wood);
+	GraphicsEngine::get()->getRenderSystem()->setRasterizerState(true);
+	drawMesh(SM_sky_mesh, m_vertex_shader, m_sky_pixel_shader, m_sky_cb, TEX_sky);
 
-	//SET THE VERTICES OF THE TRIANGLE TO DRAW
-	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setVertexBuffer(SM_mesh->getVertexBuffer());
-	//SET THE INDICES OF THE TRIANGLE TO DRAW
-	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setIndexBuffer(SM_mesh->getIndexBuffer());
-
-	// FINALLY DRAW THE TRIANGLE
-	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->drawIndexedTriangleList(SM_mesh->getIndexBuffer()->getSizeIndexList(), 0, 0);
 	m_swap_chain->present(true);
 
 	oldDelta = newDelta;
@@ -116,19 +114,14 @@ void AppWindow::onKillFocus()
 
 void AppWindow::update()
 {
-	constant cc;
+	updateCamera();
+	updateModel();
+	updateSkyBox();
+}
 
-	Matrix4x4 temp;
-
-	Matrix4x4 light_rot;
-	light_rot.setIdentity();
-	light_rot.setRotationY(rotate_light_y);
-	rotate_light_y += 0.707f * deltaTime;
-
-	cc.light_direction = light_rot.getZDirection();
-
-	cc.worldMatrix.setIdentity();
-	Matrix4x4 world_cam;
+void AppWindow::updateCamera()
+{
+	Matrix4x4 world_cam, temp;
 	world_cam.setIdentity();
 
 	temp.setIdentity();
@@ -139,20 +132,67 @@ void AppWindow::update()
 	temp.setRotationY(rotate_y);
 	world_cam *= temp;
 
-	Vector3D newPos = world_camera.getTranslation() + world_cam.getZDirection() * move_forward * 0.01f + world_cam.getXDirection() * move_right * 0.01f;
+	Vector3D newPos = world_camera.getTranslation() + world_cam.getZDirection() * move_forward * 0.05f + world_cam.getXDirection() * move_right * 0.05f;
 
 	world_cam.setTranslation(newPos);
-
-	cc.camera_position = newPos;
 
 	world_camera = world_cam;
 	world_cam.inverse();
 
-	cc.viewMatrix = world_cam;
-	float aspectRatio = (this->getClientWindowRect().right - this->getClientWindowRect().left) / (this->getClientWindowRect().bottom - this->getClientWindowRect().top);
-	cc.projectionMatrix.setPerspectiveProj(1.57f, aspectRatio, 0.000001f, 100.0f);
+	view_camera = world_cam;
+	float aspectRatio = (float)(this->getClientWindowRect().right - this->getClientWindowRect().left) / (float)(this->getClientWindowRect().bottom - this->getClientWindowRect().top);
+	projection_camera.setPerspectiveProj(1.57f, aspectRatio, 0.1f, 100.0f);
+}
+
+void AppWindow::updateModel()
+{
+	constant cc;
+	Matrix4x4 light_rot;
+	light_rot.setIdentity();
+	light_rot.setRotationY(rotate_light_y);
+	rotate_light_y += 0.707f * deltaTime;
+
+	cc.worldMatrix.setIdentity();
+	cc.viewMatrix = view_camera;
+	cc.projectionMatrix = projection_camera;
+	cc.camera_position = world_camera.getTranslation();
+	cc.light_direction = light_rot.getZDirection();
 
 	m_cb->update(GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext(), &cc);
+}
+
+void AppWindow::updateSkyBox()
+{
+	constant cc;
+
+	cc.worldMatrix.setIdentity();
+	cc.worldMatrix.setScale(Vector3D(100, 100, 100));
+	cc.worldMatrix.setTranslation(world_camera.getTranslation());
+	cc.viewMatrix = view_camera;
+	cc.projectionMatrix = projection_camera;
+
+	m_sky_cb->update(GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext(), &cc);
+}
+
+void AppWindow::drawMesh(const MeshPtr& mesh, const VertexShaderPtr& vs, const PixelShaderPtr& ps, const ConstantBufferPtr& cb, const TexturePtr& texture)
+{
+	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setConstantBuffer(vs, cb);
+	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setConstantBuffer(ps, cb);
+
+	//SET DEFAULT SHADER IN THE GRAPHICS PIPELINE TO BE ABLE TO DRAW
+	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setVertexShader(vs);
+	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setPixelShader(ps);
+
+	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setTexture(vs, texture);
+	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setTexture(ps, texture);
+
+	//SET THE VERTICES OF THE TRIANGLE TO DRAW
+	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setVertexBuffer(mesh->getVertexBuffer());
+	//SET THE INDICES OF THE TRIANGLE TO DRAW
+	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setIndexBuffer(mesh->getIndexBuffer());
+
+	// FINALLY DRAW THE TRIANGLE
+	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->drawIndexedTriangleList(mesh->getIndexBuffer()->getSizeIndexList(), 0, 0);
 }
 
 void AppWindow::onKeyDown(int key)
