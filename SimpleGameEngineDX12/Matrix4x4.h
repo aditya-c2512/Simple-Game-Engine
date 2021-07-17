@@ -97,7 +97,6 @@ public:
 	}
 	void setPerspectiveProj(float fov, float aspectRatio, float near_plane, float far_plane)
 	{
-		setIdentity();
 		float yscale = 1.0f / tan(fov / 2.0f);
 		float xscale = yscale / aspectRatio;
 		mat[0][0] = xscale;
