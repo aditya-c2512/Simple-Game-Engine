@@ -39,6 +39,7 @@ void AppWindow::onCreate()
 	world_camera.setTranslation(Vector3D(0, 0, -2));
 
 	InputSystem::get()->addListener(this);
+	play_state = true;
 	InputSystem::get()->showCursor(false);
 
 	TEX_wood = GraphicsEngine::get()->getTextureManager()->createTextureFromFile(L"assets\\Textures\\porcelain.jpg");
@@ -76,6 +77,34 @@ void AppWindow::onUpdate()
 
 	InputSystem::get()->update();
 
+	this->render();
+}
+
+void AppWindow::onDestroy()
+{
+	Window::onDestroy();
+	m_swap_chain->setFullscreen(false, 1, 1);
+}
+
+void AppWindow::onFocus()
+{
+	InputSystem::get()->addListener(this);
+}
+
+void AppWindow::onKillFocus()
+{
+	InputSystem::get()->removeListener(this);
+}
+
+void AppWindow::onSize()
+{
+	RECT rc = this->getClientWindowRect();
+	m_swap_chain->resize(rc.right, rc.bottom);
+	this->render();
+}
+
+void AppWindow::render()
+{
 	//CLEAR THE RENDER TARGET 
 	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->clearRenderTargetColor(this->m_swap_chain, 0.3f, 0.4f, 0.5f, 1);
 	//SET VIEWPORT OF RENDER TARGET IN WHICH WE HAVE TO DRAW
@@ -94,22 +123,7 @@ void AppWindow::onUpdate()
 
 	oldDelta = newDelta;
 	newDelta = ::GetTickCount();
-	deltaTime = (oldDelta)?((newDelta - oldDelta)/1000.0f):0.0f;
-}
-
-void AppWindow::onDestroy()
-{
-	Window::onDestroy();
-}
-
-void AppWindow::onFocus()
-{
-	InputSystem::get()->addListener(this);
-}
-
-void AppWindow::onKillFocus()
-{
-	InputSystem::get()->removeListener(this);
+	deltaTime = (oldDelta) ? ((newDelta - oldDelta) / 1000.0f) : 0.0f;
 }
 
 void AppWindow::update()
@@ -218,10 +232,23 @@ void AppWindow::onKeyDown(int key)
 void AppWindow::onKeyUp(int key)
 {
 	move_forward = move_right = 0.0f;
+
+	if (key == 'G')
+	{
+		play_state = (play_state) ? false : true;
+		InputSystem::get()->showCursor(!play_state);
+	}
+	if (key == 'F')
+	{
+		fullscreen_state = (fullscreen_state) ? false : true;
+		RECT rc = this->getScreenSize();
+		m_swap_chain->setFullscreen(fullscreen_state, rc.right, rc.bottom);
+	}
 }
 
 void AppWindow::onMouseMove(const Point& mouse_pos)
 {
+	if(!play_state) return;
 	int width = this->getClientWindowRect().right - this->getClientWindowRect().left;
 	int height = this->getClientWindowRect().bottom - this->getClientWindowRect().top;
 	rotate_x += 0.3 * (mouse_pos.y - height / 2.0f) * deltaTime;

@@ -75,9 +75,11 @@ float4 psmain(PS_INPUT input) : SV_TARGET
 	float kd = 1.0f;
 	//float3 id = float3(1, 1, 1);
 	float3 id = (Texture.Sample(TextureSampler, input.texcoord)).xyz;
+	float3 halfway = normalize(-input.camera_direction + light_direction.xyz);
 	float3 diffuse = kd * max(dot(light_direction.xyz, input.normal), 0) * id;
+	// * (1.0f - F_GGX(0.1f, dot(light_direction.xyz, halfway)))
 
-	float3 specular = specGGX(input.normal, light_direction.xyz, -input.camera_direction, 0.21f);
+	float3 specular = specGGX(input.normal, light_direction.xyz, -input.camera_direction, 0.05f);
 
 	float3 final_color = ambient + diffuse + specular;
 
