@@ -43,7 +43,7 @@ void AppWindow::onCreate()
 	InputSystem::get()->showCursor(false);
 
 	TEX_wood = GraphicsEngine::get()->getTextureManager()->createTextureFromFile(L"assets\\Textures\\porcelain.jpg");
-	SM_mesh = GraphicsEngine::get()->getMeshManager()->createMeshFromFile(L"assets\\Meshes\\bunny.obj");
+	SM_mesh = GraphicsEngine::get()->getMeshManager()->createMeshFromFile(L"assets\\Meshes\\dragon.obj");
 
 	TEX_sky = GraphicsEngine::get()->getTextureManager()->createTextureFromFile(L"assets\\Textures\\hdri_sky.jpg");
 	SM_sky_mesh = GraphicsEngine::get()->getMeshManager()->createMeshFromFile(L"assets\\Meshes\\sphere.obj");
@@ -233,7 +233,7 @@ void AppWindow::onKeyUp(int key)
 {
 	move_forward = move_right = 0.0f;
 
-	if (key == 'G')
+	if (key == 'G' || key == 27)
 	{
 		play_state = (play_state) ? false : true;
 		InputSystem::get()->showCursor(!play_state);

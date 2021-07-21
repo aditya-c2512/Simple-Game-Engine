@@ -73,8 +73,8 @@ float4 psmain(PS_INPUT input) : SV_TARGET
 	float3 ambient = ka * ia;
 
 	float kd = 1.0f;
-	//float3 id = float3(1, 1, 1);
-	float3 id = (Texture.Sample(TextureSampler, input.texcoord)).xyz;
+	float3 id = float3(0.5, 0.5, 0.5);
+	//float3 id = (Texture.Sample(TextureSampler, input.texcoord)).xyz;
 	float3 halfway = normalize(-input.camera_direction + light_direction.xyz);
 	float3 diffuse = kd * max(dot(light_direction.xyz, input.normal), 0) * id;
 	// * (1.0f - F_GGX(0.1f, dot(light_direction.xyz, halfway)))
