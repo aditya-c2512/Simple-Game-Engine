@@ -10,6 +10,7 @@
 #include "PixelShader.h"
 #include "InputListener.h"
 #include "Matrix4x4.h"
+#include "FPSCamera.h"
 
 class AppWindow : public Window, public InputListener
 {
@@ -37,11 +38,9 @@ public:
 
 	void render();
 	void update();
-	void updateCamera();
 	void updateModel();
 	void updateSkyBox();
-	void drawMesh(const MeshPtr& mesh, const VertexShaderPtr& vs, const PixelShaderPtr& ps, const ConstantBufferPtr& cb, const TexturePtr& texture);
-
+	
 private:
 	SwapChainPtr m_swap_chain;
 	VertexBufferPtr m_vb;
@@ -57,22 +56,19 @@ private:
 	MeshPtr SM_mesh;
 	MeshPtr SM_sky_mesh;
 
+	FPSCamera camera;
+
 	unsigned int oldDelta;
 	unsigned int newDelta;
 	float deltaTime;
 
 	float rotate_x = 0.0f;
 	float rotate_y = 0.0f;
-	float scale_cube = 1.0f;
 	float move_forward = 0.0f;
 	float move_right = 0.0f;
 	float rotate_light_y = 0.0f;
 
 	bool play_state = false;
 	bool fullscreen_state = false;
-
-	Matrix4x4 world_camera;
-	Matrix4x4 view_camera;
-	Matrix4x4 projection_camera;
 };
 

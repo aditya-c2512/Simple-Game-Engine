@@ -5,7 +5,7 @@
 #include <locale>
 #include <codecvt>
 
-#include "GraphicsEngine.h"
+//#include "GraphicsEngine.h"
 #include "VertexMesh.h"
 
 Mesh::Mesh(const wchar_t* fp) : Resource(fp)
@@ -93,4 +93,25 @@ const VertexBufferPtr& Mesh::getVertexBuffer()
 const IndexBufferPtr& Mesh::getIndexBuffer()
 {
 	return index_buffer;
+}
+
+void Mesh::drawMesh(const VertexShaderPtr& vs, const PixelShaderPtr& ps, const ConstantBufferPtr& cb, const TexturePtr& texture)
+{
+	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setConstantBuffer(vs, cb);
+	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setConstantBuffer(ps, cb);
+
+	//SET DEFAULT SHADER IN THE GRAPHICS PIPELINE TO BE ABLE TO DRAW
+	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setVertexShader(vs);
+	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setPixelShader(ps);
+
+	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setTexture(vs, texture);
+	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setTexture(ps, texture);
+
+	//SET THE VERTICES OF THE TRIANGLE TO DRAW
+	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setVertexBuffer(getVertexBuffer());
+	//SET THE INDICES OF THE TRIANGLE TO DRAW
+	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setIndexBuffer(getIndexBuffer());
+
+	// FINALLY DRAW THE TRIANGLE
+	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->drawIndexedTriangleList(getIndexBuffer()->getSizeIndexList(), 0, 0);
 }

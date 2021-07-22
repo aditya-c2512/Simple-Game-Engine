@@ -36,14 +36,15 @@ void AppWindow::onCreate()
 {
 	Window::onCreate();
 
-	world_camera.setTranslation(Vector3D(0, 0, -2));
+	float aspectRatio = (float)(this->getClientWindowRect().right - this->getClientWindowRect().left) / (float)(this->getClientWindowRect().bottom - this->getClientWindowRect().top);
+	camera = FPSCamera(Vector3D(0, 0, -2), 0.07f, 1.57f, aspectRatio);
 
-	InputSystem::get()->addListener(this);
 	play_state = true;
+	InputSystem::get()->addListener(this);
 	InputSystem::get()->showCursor(false);
 
 	TEX_wood = GraphicsEngine::get()->getTextureManager()->createTextureFromFile(L"assets\\Textures\\porcelain.jpg");
-	SM_mesh = GraphicsEngine::get()->getMeshManager()->createMeshFromFile(L"assets\\Meshes\\dragon.obj");
+	SM_mesh = GraphicsEngine::get()->getMeshManager()->createMeshFromFile(L"assets\\Meshes\\bunny.obj");
 
 	TEX_sky = GraphicsEngine::get()->getTextureManager()->createTextureFromFile(L"assets\\Textures\\hdri_sky.jpg");
 	SM_sky_mesh = GraphicsEngine::get()->getMeshManager()->createMeshFromFile(L"assets\\Meshes\\sphere.obj");
@@ -114,10 +115,10 @@ void AppWindow::render()
 	update();
 
 	GraphicsEngine::get()->getRenderSystem()->setRasterizerState(false);
-	drawMesh(SM_mesh, m_vertex_shader, m_pixel_shader, m_cb, TEX_wood);
+	SM_mesh->drawMesh(m_vertex_shader, m_pixel_shader, m_cb, TEX_wood);
 
 	GraphicsEngine::get()->getRenderSystem()->setRasterizerState(true);
-	drawMesh(SM_sky_mesh, m_vertex_shader, m_sky_pixel_shader, m_sky_cb, TEX_sky);
+	SM_sky_mesh->drawMesh(m_vertex_shader, m_sky_pixel_shader, m_sky_cb, TEX_sky);
 
 	m_swap_chain->present(true);
 
@@ -128,34 +129,9 @@ void AppWindow::render()
 
 void AppWindow::update()
 {
-	updateCamera();
+	camera.updateCamera(rotate_x, rotate_y, move_forward, move_right);
 	updateModel();
 	updateSkyBox();
-}
-
-void AppWindow::updateCamera()
-{
-	Matrix4x4 world_cam, temp;
-	world_cam.setIdentity();
-
-	temp.setIdentity();
-	temp.setRotationX(rotate_x);
-	world_cam *= temp;
-
-	temp.setIdentity();
-	temp.setRotationY(rotate_y);
-	world_cam *= temp;
-
-	Vector3D newPos = world_camera.getTranslation() + world_cam.getZDirection() * move_forward * 0.05f + world_cam.getXDirection() * move_right * 0.05f;
-
-	world_cam.setTranslation(newPos);
-
-	world_camera = world_cam;
-	world_cam.inverse();
-
-	view_camera = world_cam;
-	float aspectRatio = (float)(this->getClientWindowRect().right - this->getClientWindowRect().left) / (float)(this->getClientWindowRect().bottom - this->getClientWindowRect().top);
-	projection_camera.setPerspectiveProj(1.57f, aspectRatio, 0.1f, 100.0f);
 }
 
 void AppWindow::updateModel()
@@ -167,9 +143,9 @@ void AppWindow::updateModel()
 	rotate_light_y += 0.707f * deltaTime;
 
 	cc.worldMatrix.setIdentity();
-	cc.viewMatrix = view_camera;
-	cc.projectionMatrix = projection_camera;
-	cc.camera_position = world_camera.getTranslation();
+	cc.viewMatrix = camera.view_camera;
+	cc.projectionMatrix = camera.projection_camera;
+	cc.camera_position = camera.world_camera.getTranslation();
 	cc.light_direction = light_rot.getZDirection();
 
 	m_cb->update(GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext(), &cc);
@@ -181,32 +157,11 @@ void AppWindow::updateSkyBox()
 
 	cc.worldMatrix.setIdentity();
 	cc.worldMatrix.setScale(Vector3D(100, 100, 100));
-	cc.worldMatrix.setTranslation(world_camera.getTranslation());
-	cc.viewMatrix = view_camera;
-	cc.projectionMatrix = projection_camera;
+	cc.worldMatrix.setTranslation(camera.world_camera.getTranslation());
+	cc.viewMatrix = camera.view_camera;
+	cc.projectionMatrix = camera.projection_camera;
 
 	m_sky_cb->update(GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext(), &cc);
-}
-
-void AppWindow::drawMesh(const MeshPtr& mesh, const VertexShaderPtr& vs, const PixelShaderPtr& ps, const ConstantBufferPtr& cb, const TexturePtr& texture)
-{
-	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setConstantBuffer(vs, cb);
-	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setConstantBuffer(ps, cb);
-
-	//SET DEFAULT SHADER IN THE GRAPHICS PIPELINE TO BE ABLE TO DRAW
-	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setVertexShader(vs);
-	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setPixelShader(ps);
-
-	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setTexture(vs, texture);
-	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setTexture(ps, texture);
-
-	//SET THE VERTICES OF THE TRIANGLE TO DRAW
-	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setVertexBuffer(mesh->getVertexBuffer());
-	//SET THE INDICES OF THE TRIANGLE TO DRAW
-	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setIndexBuffer(mesh->getIndexBuffer());
-
-	// FINALLY DRAW THE TRIANGLE
-	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->drawIndexedTriangleList(mesh->getIndexBuffer()->getSizeIndexList(), 0, 0);
 }
 
 void AppWindow::onKeyDown(int key)
@@ -228,7 +183,6 @@ void AppWindow::onKeyDown(int key)
 		move_right = 1.0f;
 	}
 }
-
 void AppWindow::onKeyUp(int key)
 {
 	move_forward = move_right = 0.0f;
@@ -245,7 +199,6 @@ void AppWindow::onKeyUp(int key)
 		m_swap_chain->setFullscreen(fullscreen_state, rc.right, rc.bottom);
 	}
 }
-
 void AppWindow::onMouseMove(const Point& mouse_pos)
 {
 	if(!play_state) return;
@@ -256,23 +209,15 @@ void AppWindow::onMouseMove(const Point& mouse_pos)
 
 	InputSystem::get()->setCursorPosition(Point(width / 2, height / 2));
 }
-
 void AppWindow::onLeftMouseDown(const Point& mouse_pos)
 {
-	scale_cube = 0.5f;
 }
-
 void AppWindow::onLeftMouseUp(const Point& mouse_pos)
 {
-	scale_cube = 1.0f;
 }
-
 void AppWindow::onRightMouseDown(const Point& mouse_pos)
 {
-	scale_cube = 2.0f;
 }
-
 void AppWindow::onRightMouseUp(const Point& mouse_pos)
 {
-	scale_cube = 1.0f;
 }
