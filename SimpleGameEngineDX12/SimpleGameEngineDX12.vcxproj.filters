@@ -199,11 +199,11 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="VertexShader.hlsl">
-      <Filter>GameEngine\GraphicsEngine</Filter>
-    </None>
     <None Include="PixelShader.hlsl">
-      <Filter>GameEngine\GraphicsEngine</Filter>
+      <Filter>App</Filter>
+    </None>
+    <None Include="VertexShader.hlsl">
+      <Filter>App</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -211,7 +211,7 @@
       <Filter>GameEngine\GraphicsEngine\RenderSystem\VertexShader</Filter>
     </FxCompile>
     <FxCompile Include="SkyPixelShader.hlsl">
-      <Filter>GameEngine\GraphicsEngine</Filter>
+      <Filter>App</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

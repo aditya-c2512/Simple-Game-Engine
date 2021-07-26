@@ -1,7 +1,16 @@
 #define PI 3.14159
 
-Texture2D Texture : register(t0);
-sampler TextureSampler : register(s0);
+Texture2D EarthColor : register(t0);
+sampler EarthColorSampler : register(s0);
+
+Texture2D EarthSpecular : register(t1);
+sampler EarthSpecularSampler : register(s1);
+
+Texture2D Clouds : register(t2);
+sampler CloudsSampler : register(s2);
+
+Texture2D EarthNight : register(t3);
+sampler EarthNightSampler : register(s3);
 
 struct PS_INPUT
 {
@@ -17,6 +26,8 @@ cbuffer constant : register(b0)
 	row_major float4x4 viewMatrix;
 	row_major float4x4 projectionMatrix;
 	float4 light_direction;
+	float4 camera_position;
+	float time;
 };
 
 float G_GGX(float a, float3 n, float3 l, float3 v)
@@ -56,10 +67,10 @@ float3 specBlinnPhong(float3 n, float3 l, float3 v, float glossy)
 	return specular;
 }
 
-float3 specGGX(float3 n, float3 l, float3 v, float roughness)
+float3 specGGX(float3 n, float3 l, float3 v, float roughness, float spec)
 {
 	//Cook-Torrance GGX Shading
-	float ks = 1.0f;
+	float ks = spec;
 	float3 halfway = normalize(v + l);
 	float3 is = float3(1, 1, 1);
 	float3 specular = ks * is * max(dot(l, n), 0) * D_GGX(roughness * roughness, dot(n, halfway)) * F_GGX(0.9f, dot(l, halfway)) * G_GGX(roughness, n, l, v);
@@ -68,18 +79,28 @@ float3 specGGX(float3 n, float3 l, float3 v, float roughness)
 
 float4 psmain(PS_INPUT input) : SV_TARGET
 {
-	float ka = 0.1f;
-	float3 ia = float3(1, 1, 1);
+	float4 earth_color = (EarthColor.Sample(EarthColorSampler, 1.0f - input.texcoord));
+	float4 earth_night = (EarthNight.Sample(EarthNightSampler, 1.0f - input.texcoord));
+	float earth_spec = (EarthSpecular.Sample(EarthSpecularSampler, 1.0f - input.texcoord)).r;
+
+	float clouds = (Clouds.Sample(CloudsSampler, 1.0f - input.texcoord + float2(time / 100.0, 0))).r;
+
+	float ka = 1.5f;
+	float3 ia = float3(0.09, 0.082, 0.082);
+	ia *= (earth_color.rgb);
 	float3 ambient = ka * ia;
 
 	float kd = 1.0f;
-	float3 id = float3(0.5, 0.5, 0.5);
-	//float3 id = (Texture.Sample(TextureSampler, input.texcoord)).xyz;
+	//float3 id = float3(0.5, 0.5, 0.5);
+	float3 id_day = earth_color.rgb + clouds;
+	float3 id_night = earth_night.rgb + clouds * 0.3;
+	float3 id = lerp(id_night, id_day, (dot(light_direction.xyz, input.normal) + 1) / 2.0f);
 	float3 halfway = normalize(-input.camera_direction + light_direction.xyz);
-	float3 diffuse = kd * max(dot(light_direction.xyz, input.normal), 0) * id;
+	float3 diffuse = kd * id;
+	// * max(dot(light_direction.xyz, input.normal), 0)
 	// * (1.0f - F_GGX(0.1f, dot(light_direction.xyz, halfway)))
 
-	float3 specular = specGGX(input.normal, light_direction.xyz, -input.camera_direction, 0.05f);
+	float3 specular = specGGX(input.normal, light_direction.xyz, -input.camera_direction, 0.15f, earth_spec);
 
 	float3 final_color = ambient + diffuse + specular;
 

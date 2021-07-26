@@ -20,6 +20,7 @@ cbuffer constant : register(b0)
 	row_major float4x4 projectionMatrix;
 	float4 light_direction;
 	float4 camera_position;
+	float time;
 };
 
 VS_OUTPUT vsmain(VS_INPUT input)

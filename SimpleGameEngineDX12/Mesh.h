@@ -18,7 +18,7 @@ public :
 	const VertexBufferPtr& getVertexBuffer();
 	const IndexBufferPtr& getIndexBuffer();
 
-	void drawMesh(const VertexShaderPtr& vs, const PixelShaderPtr& ps, const ConstantBufferPtr& cb, const TexturePtr& texture);
+	void drawMesh(const VertexShaderPtr& vs, const PixelShaderPtr& ps, const ConstantBufferPtr& cb, const TexturePtr* textures, unsigned int num_tex);
 
 private :
 	VertexBufferPtr vertex_buffer;

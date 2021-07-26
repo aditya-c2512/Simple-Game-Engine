@@ -95,7 +95,7 @@ const IndexBufferPtr& Mesh::getIndexBuffer()
 	return index_buffer;
 }
 
-void Mesh::drawMesh(const VertexShaderPtr& vs, const PixelShaderPtr& ps, const ConstantBufferPtr& cb, const TexturePtr& texture)
+void Mesh::drawMesh(const VertexShaderPtr& vs, const PixelShaderPtr& ps, const ConstantBufferPtr& cb, const TexturePtr* textures, unsigned int num_tex)
 {
 	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setConstantBuffer(vs, cb);
 	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setConstantBuffer(ps, cb);
@@ -104,8 +104,8 @@ void Mesh::drawMesh(const VertexShaderPtr& vs, const PixelShaderPtr& ps, const C
 	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setVertexShader(vs);
 	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setPixelShader(ps);
 
-	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setTexture(vs, texture);
-	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setTexture(ps, texture);
+	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setTexture(vs, textures, num_tex);
+	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setTexture(ps, textures, num_tex);
 
 	//SET THE VERTICES OF THE TRIANGLE TO DRAW
 	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setVertexBuffer(getVertexBuffer());

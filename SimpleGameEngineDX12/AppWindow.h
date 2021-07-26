@@ -51,7 +51,10 @@ private:
 	PixelShaderPtr m_pixel_shader;
 	PixelShaderPtr m_sky_pixel_shader;
 
-	TexturePtr TEX_wood;
+	TexturePtr TEX_earth;
+	TexturePtr TEX_earth_night;
+	TexturePtr TEX_earth_spec;
+	TexturePtr TEX_cloud;
 	TexturePtr TEX_sky;
 	MeshPtr SM_mesh;
 	MeshPtr SM_sky_mesh;
@@ -61,6 +64,7 @@ private:
 	unsigned int oldDelta;
 	unsigned int newDelta;
 	float deltaTime;
+	float time = 0.0f;
 
 	float rotate_x = 0.0f;
 	float rotate_y = 0.0f;

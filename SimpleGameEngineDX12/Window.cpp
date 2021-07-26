@@ -66,7 +66,7 @@ Window::Window()
 	if (!::RegisterClassEx(&wc)) // If the registration of class will fail, the function will return false
 		throw std::exception("FAILED TO CREATE WNDCLASSEX STRUCT");
 
-	m_hwnd = ::CreateWindowEx(WS_EX_OVERLAPPEDWINDOW, L"MyWindowClass", L"DirectX Engine", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 1024, 768, NULL, NULL, NULL, NULL);
+	m_hwnd = ::CreateWindowEx(WS_EX_OVERLAPPEDWINDOW, L"MyWindowClass", L"DirectX Engine", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 1920, 1080, NULL, NULL, NULL, NULL);
 
 	//if the creation fail return false
 	if (!m_hwnd)

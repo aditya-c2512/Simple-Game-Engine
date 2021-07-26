@@ -22,6 +22,7 @@ struct constant
 	Matrix4x4 projectionMatrix;
 	Vector4D light_direction;
 	Vector4D camera_position;
+	float time = 0.0f;
 };
 
 AppWindow::AppWindow()
@@ -43,10 +44,14 @@ void AppWindow::onCreate()
 	InputSystem::get()->addListener(this);
 	InputSystem::get()->showCursor(false);
 
-	TEX_wood = GraphicsEngine::get()->getTextureManager()->createTextureFromFile(L"assets\\Textures\\porcelain.jpg");
-	SM_mesh = GraphicsEngine::get()->getMeshManager()->createMeshFromFile(L"assets\\Meshes\\bunny.obj");
+	TEX_earth = GraphicsEngine::get()->getTextureManager()->createTextureFromFile(L"assets\\Textures\\earth_color.jpg");
+	TEX_earth_night = GraphicsEngine::get()->getTextureManager()->createTextureFromFile(L"assets\\Textures\\earth_night.jpg");
+	TEX_earth_spec = GraphicsEngine::get()->getTextureManager()->createTextureFromFile(L"assets\\Textures\\earth_spec.jpg");
+	TEX_cloud = GraphicsEngine::get()->getTextureManager()->createTextureFromFile(L"assets\\Textures\\clouds.jpg");
 
-	TEX_sky = GraphicsEngine::get()->getTextureManager()->createTextureFromFile(L"assets\\Textures\\hdri_sky.jpg");
+	SM_mesh = GraphicsEngine::get()->getMeshManager()->createMeshFromFile(L"assets\\Meshes\\sphere_hq.obj");
+
+	TEX_sky = GraphicsEngine::get()->getTextureManager()->createTextureFromFile(L"assets\\Textures\\stars_map.jpg");
 	SM_sky_mesh = GraphicsEngine::get()->getMeshManager()->createMeshFromFile(L"assets\\Meshes\\sphere.obj");
 
 	RECT rc = this->getClientWindowRect();
@@ -114,17 +119,25 @@ void AppWindow::render()
 
 	update();
 
-	GraphicsEngine::get()->getRenderSystem()->setRasterizerState(false);
-	SM_mesh->drawMesh(m_vertex_shader, m_pixel_shader, m_cb, TEX_wood);
+	TexturePtr textures[4];
+	textures[0] = TEX_earth;
+	textures[1] = TEX_earth_spec;
+	textures[2] = TEX_cloud;
+	textures[3] = TEX_earth_night;
 
+	GraphicsEngine::get()->getRenderSystem()->setRasterizerState(false);
+	SM_mesh->drawMesh(m_vertex_shader, m_pixel_shader, m_cb, textures, 4);
+
+	textures[0] = TEX_sky;
 	GraphicsEngine::get()->getRenderSystem()->setRasterizerState(true);
-	SM_sky_mesh->drawMesh(m_vertex_shader, m_sky_pixel_shader, m_sky_cb, TEX_sky);
+	SM_sky_mesh->drawMesh(m_vertex_shader, m_sky_pixel_shader, m_sky_cb, textures, 1);
 
 	m_swap_chain->present(true);
 
 	oldDelta = newDelta;
 	newDelta = ::GetTickCount();
 	deltaTime = (oldDelta) ? ((newDelta - oldDelta) / 1000.0f) : 0.0f;
+	time += deltaTime;
 }
 
 void AppWindow::update()
@@ -140,13 +153,15 @@ void AppWindow::updateModel()
 	Matrix4x4 light_rot;
 	light_rot.setIdentity();
 	light_rot.setRotationY(rotate_light_y);
-	rotate_light_y += 0.707f * deltaTime;
+	rotate_light_y += 0.307f * deltaTime;
 
 	cc.worldMatrix.setIdentity();
+	cc.worldMatrix.setTranslation(Vector3D(0, 0, 0));
 	cc.viewMatrix = camera.view_camera;
 	cc.projectionMatrix = camera.projection_camera;
 	cc.camera_position = camera.world_camera.getTranslation();
 	cc.light_direction = light_rot.getZDirection();
+	cc.time = time;
 
 	m_cb->update(GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext(), &cc);
 }
