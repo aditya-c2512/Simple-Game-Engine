@@ -22,6 +22,8 @@ struct constant
 	Matrix4x4 projectionMatrix;
 	Vector4D light_direction;
 	Vector4D camera_position;
+	Vector4D light_position = Vector4D(0, 1, 0, 1);
+	float light_radius = 2.0f;
 	float time = 0.0f;
 };
 
@@ -38,20 +40,22 @@ void AppWindow::onCreate()
 	Window::onCreate();
 
 	float aspectRatio = (float)(this->getClientWindowRect().right - this->getClientWindowRect().left) / (float)(this->getClientWindowRect().bottom - this->getClientWindowRect().top);
-	camera = FPSCamera(Vector3D(0, 0, -2), 0.07f, 1.57f, aspectRatio);
+	camera = FPSCamera(Vector3D(0, 1, -2), 0.07f, 1.57f, aspectRatio);
 
 	play_state = true;
 	InputSystem::get()->addListener(this);
 	InputSystem::get()->showCursor(false);
 
+	/*
 	TEX_earth = GraphicsEngine::get()->getTextureManager()->createTextureFromFile(L"assets\\Textures\\earth_color.jpg");
 	TEX_earth_night = GraphicsEngine::get()->getTextureManager()->createTextureFromFile(L"assets\\Textures\\earth_night.jpg");
 	TEX_earth_spec = GraphicsEngine::get()->getTextureManager()->createTextureFromFile(L"assets\\Textures\\earth_spec.jpg");
 	TEX_cloud = GraphicsEngine::get()->getTextureManager()->createTextureFromFile(L"assets\\Textures\\clouds.jpg");
+	*/
+	TEX_scene = GraphicsEngine::get()->getTextureManager()->createTextureFromFile(L"assets\\Textures\\factory_brick.jpg");
+	SM_mesh = GraphicsEngine::get()->getMeshManager()->createMeshFromFile(L"assets\\Meshes\\scene.obj");
 
-	SM_mesh = GraphicsEngine::get()->getMeshManager()->createMeshFromFile(L"assets\\Meshes\\sphere_hq.obj");
-
-	TEX_sky = GraphicsEngine::get()->getTextureManager()->createTextureFromFile(L"assets\\Textures\\stars_map.jpg");
+	TEX_sky = GraphicsEngine::get()->getTextureManager()->createTextureFromFile(L"assets\\Textures\\hdri_sky.jpg");
 	SM_sky_mesh = GraphicsEngine::get()->getMeshManager()->createMeshFromFile(L"assets\\Meshes\\sphere.obj");
 
 	RECT rc = this->getClientWindowRect();
@@ -60,11 +64,11 @@ void AppWindow::onCreate()
 	void* shader_byte_code = nullptr;
 	size_t size_shader = 0;
 
-	GraphicsEngine::get()->getRenderSystem()->compileVertexShader(L"VertexShader.hlsl", "vsmain", &shader_byte_code, &size_shader);
+	GraphicsEngine::get()->getRenderSystem()->compileVertexShader(L"PointLightVertexShader.hlsl", "vsmain", &shader_byte_code, &size_shader);
 	m_vertex_shader = GraphicsEngine::get()->getRenderSystem()->createVertexShader(shader_byte_code, size_shader);
 	GraphicsEngine::get()->getRenderSystem()->releaseCompiledShader();
 
-	GraphicsEngine::get()->getRenderSystem()->compilePixelShader(L"PixelShader.hlsl", "psmain", &shader_byte_code, &size_shader);
+	GraphicsEngine::get()->getRenderSystem()->compilePixelShader(L"PointLightPixelShader.hlsl", "psmain", &shader_byte_code, &size_shader);
 	m_pixel_shader = GraphicsEngine::get()->getRenderSystem()->createPixelShader(shader_byte_code, size_shader);
 
 	GraphicsEngine::get()->getRenderSystem()->compilePixelShader(L"SkyPixelShader.hlsl", "psmain", &shader_byte_code, &size_shader);
@@ -119,14 +123,15 @@ void AppWindow::render()
 
 	update();
 
-	TexturePtr textures[4];
-	textures[0] = TEX_earth;
+	TexturePtr textures[1];
+	textures[0] = TEX_scene;
+	/*textures[0] = TEX_earth;
 	textures[1] = TEX_earth_spec;
 	textures[2] = TEX_cloud;
-	textures[3] = TEX_earth_night;
+	textures[3] = TEX_earth_night;*/
 
 	GraphicsEngine::get()->getRenderSystem()->setRasterizerState(false);
-	SM_mesh->drawMesh(m_vertex_shader, m_pixel_shader, m_cb, textures, 4);
+	SM_mesh->drawMesh(m_vertex_shader, m_pixel_shader, m_cb, textures, 1);
 
 	textures[0] = TEX_sky;
 	GraphicsEngine::get()->getRenderSystem()->setRasterizerState(true);
@@ -153,7 +158,7 @@ void AppWindow::updateModel()
 	Matrix4x4 light_rot;
 	light_rot.setIdentity();
 	light_rot.setRotationY(rotate_light_y);
-	rotate_light_y += 0.307f * deltaTime;
+	rotate_light_y += 0.707f * deltaTime;
 
 	cc.worldMatrix.setIdentity();
 	cc.worldMatrix.setTranslation(Vector3D(0, 0, 0));
@@ -161,6 +166,8 @@ void AppWindow::updateModel()
 	cc.projectionMatrix = camera.projection_camera;
 	cc.camera_position = camera.world_camera.getTranslation();
 	cc.light_direction = light_rot.getZDirection();
+	float dist_from_orig = 1.0f;
+	cc.light_position = Vector4D(cos(rotate_light_y) * dist_from_orig, 1.0f, sin(rotate_light_y) * dist_from_orig,1.0f);
 	cc.time = time;
 
 	m_cb->update(GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext(), &cc);

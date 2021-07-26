@@ -51,6 +51,7 @@ private:
 	PixelShaderPtr m_pixel_shader;
 	PixelShaderPtr m_sky_pixel_shader;
 
+	TexturePtr TEX_scene;
 	TexturePtr TEX_earth;
 	TexturePtr TEX_earth_night;
 	TexturePtr TEX_earth_spec;
