@@ -53,7 +53,7 @@ void AppWindow::onCreate()
 	TEX_cloud = GraphicsEngine::get()->getTextureManager()->createTextureFromFile(L"assets\\Textures\\clouds.jpg");
 	*/
 	TEX_scene = GraphicsEngine::get()->getTextureManager()->createTextureFromFile(L"assets\\Textures\\factory_brick.jpg");
-	SM_mesh = GraphicsEngine::get()->getMeshManager()->createMeshFromFile(L"assets\\Meshes\\scene.obj");
+	SM_mesh = GraphicsEngine::get()->getMeshManager()->createMeshFromFile(L"assets\\Meshes\\sponza.obj");
 
 	TEX_sky = GraphicsEngine::get()->getTextureManager()->createTextureFromFile(L"assets\\Textures\\hdri_sky.jpg");
 	SM_sky_mesh = GraphicsEngine::get()->getMeshManager()->createMeshFromFile(L"assets\\Meshes\\sphere.obj");
@@ -64,11 +64,11 @@ void AppWindow::onCreate()
 	void* shader_byte_code = nullptr;
 	size_t size_shader = 0;
 
-	GraphicsEngine::get()->getRenderSystem()->compileVertexShader(L"PointLightVertexShader.hlsl", "vsmain", &shader_byte_code, &size_shader);
+	GraphicsEngine::get()->getRenderSystem()->compileVertexShader(L"SponzaVertexShader.hlsl", "vsmain", &shader_byte_code, &size_shader);
 	m_vertex_shader = GraphicsEngine::get()->getRenderSystem()->createVertexShader(shader_byte_code, size_shader);
 	GraphicsEngine::get()->getRenderSystem()->releaseCompiledShader();
 
-	GraphicsEngine::get()->getRenderSystem()->compilePixelShader(L"PointLightPixelShader.hlsl", "psmain", &shader_byte_code, &size_shader);
+	GraphicsEngine::get()->getRenderSystem()->compilePixelShader(L"SponzaPixelShader.hlsl", "psmain", &shader_byte_code, &size_shader);
 	m_pixel_shader = GraphicsEngine::get()->getRenderSystem()->createPixelShader(shader_byte_code, size_shader);
 
 	GraphicsEngine::get()->getRenderSystem()->compilePixelShader(L"SkyPixelShader.hlsl", "psmain", &shader_byte_code, &size_shader);

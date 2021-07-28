@@ -61,6 +61,9 @@
     <Filter Include="App\Shaders\PointLightShaders">
       <UniqueIdentifier>{ac69c489-044d-4807-a666-f46e5eccdea9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="App\Shaders\SponzaShaders">
+      <UniqueIdentifier>{cc91fb5b-06d6-4992-bbb9-df7146001462}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -227,6 +230,12 @@
     </FxCompile>
     <FxCompile Include="PointLightPixelShader.hlsl">
       <Filter>App\Shaders\PointLightShaders</Filter>
+    </FxCompile>
+    <FxCompile Include="SponzaVertexShader.hlsl">
+      <Filter>App\Shaders\SponzaShaders</Filter>
+    </FxCompile>
+    <FxCompile Include="SponzaPixelShader.hlsl">
+      <Filter>App\Shaders\SponzaShaders</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>
