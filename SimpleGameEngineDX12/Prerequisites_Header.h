@@ -16,6 +16,7 @@ class Texture;
 class TextureManager;
 class Mesh;
 class MeshManager;
+class Material;
 
 typedef std::shared_ptr<SwapChain> SwapChainPtr;
 typedef std::shared_ptr<DeviceContext> DeviceContextPtr;
@@ -27,3 +28,4 @@ typedef std::shared_ptr<PixelShader> PixelShaderPtr;
 typedef std::shared_ptr<Resource> ResourcePtr;
 typedef std::shared_ptr<Texture> TexturePtr;
 typedef std::shared_ptr<Mesh> MeshPtr;
+typedef std::shared_ptr<Material> MaterialPtr;

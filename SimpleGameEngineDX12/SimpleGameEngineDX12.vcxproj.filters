@@ -64,6 +64,9 @@
     <Filter Include="App\Shaders\SponzaShaders">
       <UniqueIdentifier>{cc91fb5b-06d6-4992-bbb9-df7146001462}</UniqueIdentifier>
     </Filter>
+    <Filter Include="GameEngine\GraphicsEngine\Material">
+      <UniqueIdentifier>{41e6df5c-9709-4a07-b5d8-ee1cd3858da6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -125,6 +128,9 @@
     </ClCompile>
     <ClCompile Include="FPSCamera.cpp">
       <Filter>GameEngine</Filter>
+    </ClCompile>
+    <ClCompile Include="Material.cpp">
+      <Filter>GameEngine\GraphicsEngine\Material</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -208,6 +214,12 @@
     </ClInclude>
     <ClInclude Include="FPSCamera.h">
       <Filter>GameEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="Material.h">
+      <Filter>GameEngine\GraphicsEngine\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="Rect.h">
+      <Filter>GameEngine\GraphicsEngine\Math</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

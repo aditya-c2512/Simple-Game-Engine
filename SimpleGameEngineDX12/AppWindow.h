@@ -12,6 +12,16 @@
 #include "Matrix4x4.h"
 #include "FPSCamera.h"
 
+/* TO-DO :
+* 1. SHADOW MAPS -
+* -> Make a projection matrix "lightProjectionMatrix" to store the orthographic projection for the texture.
+* -> Make a matrix "lightViewMatrix" to store the lookAt matrix from the light's POV.
+* -> lightSpaceMatrix = lightProjectionMatrix * lightViewMatrix.
+* -> [VS] PixelPosLightSpace = lightSpaceMatrix * PixelPos.
+* -> [PS] projCoords = PixelPosLightSpace.xyz / PixelPosLightPSace.w; projCoords = projCoords * 0.5 + 0.5.
+* -> Calculate depth from texture using these.
+*/
+
 class AppWindow : public Window, public InputListener
 {
 public:
@@ -36,28 +46,27 @@ public:
 	virtual void onRightMouseDown(const Point& mouse_pos) override;
 	virtual void onRightMouseUp(const Point& mouse_pos) override;
 
+	void renderShadowMap();
 	void render();
 	void update();
-	void updateModel();
+	void updateModel(Vector3D pos, const MaterialPtr& mat);
 	void updateSkyBox();
 	
 private:
 	SwapChainPtr m_swap_chain;
 	VertexBufferPtr m_vb;
 	IndexBufferPtr m_ib;
-	ConstantBufferPtr m_cb;
-	ConstantBufferPtr m_sky_cb;
-	VertexShaderPtr m_vertex_shader;
-	PixelShaderPtr m_pixel_shader;
-	PixelShaderPtr m_sky_pixel_shader;
 
 	TexturePtr TEX_scene;
-	TexturePtr TEX_earth;
-	TexturePtr TEX_earth_night;
-	TexturePtr TEX_earth_spec;
-	TexturePtr TEX_cloud;
 	TexturePtr TEX_sky;
+
+	TexturePtr shadow_map_rtv;
+	TexturePtr shadow_map_dsv;
+
+	MaterialPtr MAT_mesh;
+	MaterialPtr MAT_sky;
 	MeshPtr SM_mesh;
+	MeshPtr SM_plane;
 	MeshPtr SM_sky_mesh;
 
 	FPSCamera camera;

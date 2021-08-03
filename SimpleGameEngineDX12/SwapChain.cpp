@@ -16,7 +16,7 @@ SwapChain::SwapChain(HWND hwnd, UINT width, UINT height, RenderSystem* rs) : ren
 	desc.BufferDesc.RefreshRate.Denominator = 1;
 	desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 	desc.OutputWindow = hwnd;
-	desc.SampleDesc.Count = 1;
+	desc.SampleDesc.Count = 2;
 	desc.SampleDesc.Quality = 0;
 	desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 	desc.Windowed = TRUE;
@@ -81,7 +81,7 @@ void SwapChain::reloadBuffers(unsigned int width, unsigned int height)
 	tex_desc.Usage = D3D11_USAGE_DEFAULT;
 	tex_desc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
 	tex_desc.MipLevels = 1;
-	tex_desc.SampleDesc.Count = 1;
+	tex_desc.SampleDesc.Count = 2;
 	tex_desc.SampleDesc.Quality = 0;
 	tex_desc.MiscFlags = 0;
 	tex_desc.ArraySize = 1;

@@ -46,14 +46,10 @@ void AppWindow::onCreate()
 	InputSystem::get()->addListener(this);
 	InputSystem::get()->showCursor(false);
 
-	/*
-	TEX_earth = GraphicsEngine::get()->getTextureManager()->createTextureFromFile(L"assets\\Textures\\earth_color.jpg");
-	TEX_earth_night = GraphicsEngine::get()->getTextureManager()->createTextureFromFile(L"assets\\Textures\\earth_night.jpg");
-	TEX_earth_spec = GraphicsEngine::get()->getTextureManager()->createTextureFromFile(L"assets\\Textures\\earth_spec.jpg");
-	TEX_cloud = GraphicsEngine::get()->getTextureManager()->createTextureFromFile(L"assets\\Textures\\clouds.jpg");
-	*/
-	TEX_scene = GraphicsEngine::get()->getTextureManager()->createTextureFromFile(L"assets\\Textures\\factory_brick.jpg");
-	SM_mesh = GraphicsEngine::get()->getMeshManager()->createMeshFromFile(L"assets\\Meshes\\sponza.obj");
+	TEX_scene = GraphicsEngine::get()->getTextureManager()->createTextureFromFile(L"assets\\Textures\\porcelain.jpg");
+	SM_mesh = GraphicsEngine::get()->getMeshManager()->createMeshFromFile(L"assets\\Meshes\\bunny.obj");
+
+	SM_plane = GraphicsEngine::get()->getMeshManager()->createMeshFromFile(L"assets\\Meshes\\plane.obj");
 
 	TEX_sky = GraphicsEngine::get()->getTextureManager()->createTextureFromFile(L"assets\\Textures\\hdri_sky.jpg");
 	SM_sky_mesh = GraphicsEngine::get()->getMeshManager()->createMeshFromFile(L"assets\\Meshes\\sphere.obj");
@@ -64,21 +60,20 @@ void AppWindow::onCreate()
 	void* shader_byte_code = nullptr;
 	size_t size_shader = 0;
 
-	GraphicsEngine::get()->getRenderSystem()->compileVertexShader(L"SponzaVertexShader.hlsl", "vsmain", &shader_byte_code, &size_shader);
-	m_vertex_shader = GraphicsEngine::get()->getRenderSystem()->createVertexShader(shader_byte_code, size_shader);
-	GraphicsEngine::get()->getRenderSystem()->releaseCompiledShader();
+	MAT_mesh = GraphicsEngine::get()->createMaterial(L"SponzaVertexShader.hlsl", L"SponzaPixelShader.hlsl");
+	MAT_mesh->addTexture(TEX_scene);
+	MAT_mesh->setCullMode(CULL_MODE_BACK);
 
-	GraphicsEngine::get()->getRenderSystem()->compilePixelShader(L"SponzaPixelShader.hlsl", "psmain", &shader_byte_code, &size_shader);
-	m_pixel_shader = GraphicsEngine::get()->getRenderSystem()->createPixelShader(shader_byte_code, size_shader);
+	MAT_sky = GraphicsEngine::get()->createMaterial(L"SponzaVertexShader.hlsl", L"SkyPixelShader.hlsl");
+	MAT_sky->addTexture(TEX_sky);
+	MAT_sky->setCullMode(CULL_MODE_FRONT);
 
-	GraphicsEngine::get()->getRenderSystem()->compilePixelShader(L"SkyPixelShader.hlsl", "psmain", &shader_byte_code, &size_shader);
-	m_sky_pixel_shader = GraphicsEngine::get()->getRenderSystem()->createPixelShader(shader_byte_code, size_shader);
-
-	GraphicsEngine::get()->getRenderSystem()->releaseCompiledShader();
-
-	constant cc;
-	m_cb = GraphicsEngine::get()->getRenderSystem()->createConstantBuffer(&cc, sizeof(constant));
-	m_sky_cb = GraphicsEngine::get()->getRenderSystem()->createConstantBuffer(&cc, sizeof(constant));
+	/* 
+	* CREATE LIGHT DEPTH STENCIL VIEW
+	*/
+	shadow_map_rtv = GraphicsEngine::get()->getTextureManager()->createTexture(Rect(1920, 1080), Texture::TEXTURE_TYPE::TEXTURE_TYPE_RENDER_TARGET);
+	shadow_map_dsv = GraphicsEngine::get()->getTextureManager()->createTexture(Rect(1920, 1080), Texture::TEXTURE_TYPE::TEXTURE_TYPE_DEPTH_STENCIL);
+	MAT_mesh->addTexture(shadow_map_dsv);
 }
 
 void AppWindow::onUpdate()
@@ -87,6 +82,7 @@ void AppWindow::onUpdate()
 
 	InputSystem::get()->update();
 
+	this->renderShadowMap();
 	this->render();
 }
 
@@ -113,6 +109,27 @@ void AppWindow::onSize()
 	this->render();
 }
 
+void AppWindow::renderShadowMap()
+{
+	//CLEAR THE RENDER TARGET AND DEPTH STENCIL
+	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->clearRenderTargetColor(shadow_map_rtv, 0.3f, 0.4f, 0.5f, 1);
+	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->clearDepthStencil(shadow_map_dsv);
+	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->SetRenderTarget(shadow_map_rtv, shadow_map_dsv);
+	//SET VIEWPORT OF RENDER TARGET IN WHICH WE HAVE TO DRAW
+	RECT rc = this->getClientWindowRect();
+	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setViewportSize(1920, 1080);
+
+	update();
+
+	updateModel(Vector3D(0, 0, 0), MAT_mesh);
+	SM_mesh->drawMesh(MAT_mesh);
+
+	updateModel(Vector3D(0, -0.5f, 0), MAT_mesh);
+	SM_plane->drawMesh(MAT_mesh);
+
+	SM_sky_mesh->drawMesh(MAT_sky);
+}
+
 void AppWindow::render()
 {
 	//CLEAR THE RENDER TARGET 
@@ -123,19 +140,13 @@ void AppWindow::render()
 
 	update();
 
-	TexturePtr textures[1];
-	textures[0] = TEX_scene;
-	/*textures[0] = TEX_earth;
-	textures[1] = TEX_earth_spec;
-	textures[2] = TEX_cloud;
-	textures[3] = TEX_earth_night;*/
+	updateModel(Vector3D(0, 0, 0), MAT_mesh);
+	SM_mesh->drawMesh(MAT_mesh);
 
-	GraphicsEngine::get()->getRenderSystem()->setRasterizerState(false);
-	SM_mesh->drawMesh(m_vertex_shader, m_pixel_shader, m_cb, textures, 1);
+	updateModel(Vector3D(0, -0.5f, 0), MAT_mesh);
+	SM_plane->drawMesh(MAT_mesh);
 
-	textures[0] = TEX_sky;
-	GraphicsEngine::get()->getRenderSystem()->setRasterizerState(true);
-	SM_sky_mesh->drawMesh(m_vertex_shader, m_sky_pixel_shader, m_sky_cb, textures, 1);
+	SM_sky_mesh->drawMesh(MAT_sky);
 
 	m_swap_chain->present(true);
 
@@ -147,21 +158,24 @@ void AppWindow::render()
 
 void AppWindow::update()
 {
+	float aspectRatio = (float)(this->getClientWindowRect().right - this->getClientWindowRect().left) / (float)(this->getClientWindowRect().bottom - this->getClientWindowRect().top);
+	camera.aspectRatio = aspectRatio;
 	camera.updateCamera(rotate_x, rotate_y, move_forward, move_right);
-	updateModel();
+	//updateModel();
 	updateSkyBox();
 }
 
-void AppWindow::updateModel()
+void AppWindow::updateModel(Vector3D pos, const MaterialPtr& mat)
 {
 	constant cc;
 	Matrix4x4 light_rot;
 	light_rot.setIdentity();
 	light_rot.setRotationY(rotate_light_y);
-	rotate_light_y += 0.707f * deltaTime;
+	light_rot.setRotationX(-45);
+	//rotate_light_y += 0.707f * deltaTime;
 
 	cc.worldMatrix.setIdentity();
-	cc.worldMatrix.setTranslation(Vector3D(0, 0, 0));
+	cc.worldMatrix.setTranslation(pos);
 	cc.viewMatrix = camera.view_camera;
 	cc.projectionMatrix = camera.projection_camera;
 	cc.camera_position = camera.world_camera.getTranslation();
@@ -170,7 +184,7 @@ void AppWindow::updateModel()
 	cc.light_position = Vector4D(cos(rotate_light_y) * dist_from_orig, 1.0f, sin(rotate_light_y) * dist_from_orig,1.0f);
 	cc.time = time;
 
-	m_cb->update(GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext(), &cc);
+	mat->setData(&cc, sizeof(constant));
 }
 
 void AppWindow::updateSkyBox()
@@ -183,7 +197,7 @@ void AppWindow::updateSkyBox()
 	cc.viewMatrix = camera.view_camera;
 	cc.projectionMatrix = camera.projection_camera;
 
-	m_sky_cb->update(GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext(), &cc);
+	MAT_sky->setData(&cc, sizeof(constant));
 }
 
 void AppWindow::onKeyDown(int key)
@@ -203,6 +217,10 @@ void AppWindow::onKeyDown(int key)
 	else if (key == 'D')
 	{
 		move_right = 1.0f;
+	}
+	else if (key == 'O')
+	{
+		rotate_light_y += 0.01f;
 	}
 }
 void AppWindow::onKeyUp(int key)

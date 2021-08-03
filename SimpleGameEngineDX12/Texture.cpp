@@ -38,8 +38,100 @@ Texture::Texture(const wchar_t* fp) : Resource(fp)
 	}
 }
 
+Texture::Texture(const Rect& s, Texture::TEXTURE_TYPE type) : Resource(L"")
+{
+	D3D11_TEXTURE2D_DESC tex_desc = {};
+	tex_desc.Width = s.width;
+	tex_desc.Height = s.height;
+
+	if (type == TEXTURE_TYPE_NORMAL)
+	{
+		tex_desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+		tex_desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+	}
+	else if (type == TEXTURE_TYPE_RENDER_TARGET)
+	{
+		tex_desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+		tex_desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+	}
+	else if (type == TEXTURE_TYPE_DEPTH_STENCIL)
+	{
+		tex_desc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+		tex_desc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
+	}
+	else if (type == TEXTURE_TYPE_SHADOW_MAP)
+	{
+		tex_desc.Format = DXGI_FORMAT_R24G8_TYPELESS;
+		tex_desc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
+	}
+
+	tex_desc.Usage = D3D11_USAGE_DEFAULT;
+	//tex_desc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+	tex_desc.MipLevels = 1;
+	tex_desc.SampleDesc.Count = 2;
+	tex_desc.SampleDesc.Quality = 0;
+	tex_desc.MiscFlags = 0;
+	tex_desc.ArraySize = 1;
+	tex_desc.CPUAccessFlags = 0;
+
+	HRESULT hr = GraphicsEngine::get()->getRenderSystem()->m_d3d_device->CreateTexture2D(&tex_desc, nullptr, (ID3D11Texture2D**)(&texture));
+	if (FAILED(hr))
+	{
+		throw std::exception("FAILED TO CREATE FRAMEBUFFER TEXTURE");
+	}
+
+	if (type == TEXTURE_TYPE_NORMAL || type == TEXTURE_TYPE_RENDER_TARGET)
+	{
+		hr = GraphicsEngine::get()->getRenderSystem()->m_d3d_device->CreateShaderResourceView(texture, NULL, &shader_resource_view);
+		if (FAILED(hr))
+		{
+			throw std::exception("FAILED TO CREATE DEPTH STENCIL VIEW");
+		}
+	}
+	if (type == TEXTURE_TYPE_RENDER_TARGET)
+	{
+		hr = GraphicsEngine::get()->getRenderSystem()->m_d3d_device->CreateRenderTargetView(texture, NULL, &render_target_view);
+		if (FAILED(hr))
+		{
+			throw std::exception("FAILED TO CREATE DEPTH STENCIL VIEW");
+		}
+	}
+	else if (type == TEXTURE_TYPE_DEPTH_STENCIL)
+	{
+		hr = GraphicsEngine::get()->getRenderSystem()->m_d3d_device->CreateDepthStencilView(texture, NULL, &depth_stencil_view);
+		if (FAILED(hr))
+		{
+			throw std::exception("FAILED TO CREATE DEPTH STENCIL VIEW");
+		}
+	}
+	else if (type == TEXTURE_TYPE_SHADOW_MAP)
+	{
+		hr = GraphicsEngine::get()->getRenderSystem()->m_d3d_device->CreateDepthStencilView(texture, NULL, &depth_stencil_view);
+		if (FAILED(hr))
+		{
+			throw std::exception("FAILED TO CREATE DEPTH STENCIL VIEW");
+		}
+	}
+
+	texture_type = type;
+	size = s;
+}
+
 Texture::~Texture()
 {
-	shader_resource_view->Release();
-	texture->Release();
+	if(render_target_view) render_target_view->Release();
+	if(depth_stencil_view) depth_stencil_view->Release();
+	if(sampler_state) sampler_state->Release();
+	if(shader_resource_view) shader_resource_view->Release();
+	if(texture) texture->Release();
+}
+
+Rect Texture::getSize()
+{
+	return size;
+}
+
+Texture::TEXTURE_TYPE Texture::getTextureType()
+{
+	return texture_type;
 }

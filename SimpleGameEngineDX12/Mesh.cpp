@@ -95,17 +95,9 @@ const IndexBufferPtr& Mesh::getIndexBuffer()
 	return index_buffer;
 }
 
-void Mesh::drawMesh(const VertexShaderPtr& vs, const PixelShaderPtr& ps, const ConstantBufferPtr& cb, const TexturePtr* textures, unsigned int num_tex)
+void Mesh::drawMesh(const MaterialPtr& material)
 {
-	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setConstantBuffer(vs, cb);
-	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setConstantBuffer(ps, cb);
-
-	//SET DEFAULT SHADER IN THE GRAPHICS PIPELINE TO BE ABLE TO DRAW
-	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setVertexShader(vs);
-	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setPixelShader(ps);
-
-	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setTexture(vs, textures, num_tex);
-	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setTexture(ps, textures, num_tex);
+	GraphicsEngine::get()->setMaterial(material);
 
 	//SET THE VERTICES OF THE TRIANGLE TO DRAW
 	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setVertexBuffer(getVertexBuffer());

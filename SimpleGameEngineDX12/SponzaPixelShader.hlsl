@@ -49,22 +49,42 @@ float3 specGGX(float3 n, float3 l, float3 v, float roughness, float spec)
 	return specular;
 }
 
+float3 specPhong(float3 n, float3 l, float3 v, float glossy)
+{
+	//Phong Shading
+	float ks = 1.0f;
+	float3 is = float3(1, 1, 1);
+	float3 specular = ks * pow(max(dot(reflect(l, n), v), 0), glossy) * is;
+	return specular;
+}
+
+float3 specBlinnPhong(float3 n, float3 l, float3 v, float glossy)
+{
+	//Blinn-Phong Shading
+	float ks = 1.0f;
+	float3 is = float3(1, 1, 1);
+	float3 halfway = normalize(v + l);
+	float3 specular = ks * (glossy + 8) / 8 * pow(max(dot(n, halfway), 0), glossy) * is;
+	return specular;
+}
+
 float4 psmain(PS_INPUT input) : SV_TARGET
 {
-	float ka = 1.5f;
+	float ka = 0.0f;
 	float3 ia = float3(0.09, 0.082, 0.082);
 	float3 ambient = ka * ia;
 
 	float kd = 1.0f;
 	float3 id = tex.Sample(TextureSampler, 1.0f - input.texcoord);
-	//float3 halfway = normalize(-input.camera_direction + light_direction.xyz);
-	float3 diffuse = kd * id * max(dot(light_direction.xyz, input.normal), 0);
+	float3 halfway = normalize(-input.camera_direction + light_direction.xyz);
+	float3 diffuse = kd * id * max(dot(light_direction.xyz, input.normal), 0) * (1.0f - F_GGX(0.09f, dot(light_direction.xyz, halfway)));
 	// * max(dot(light_direction.xyz, input.normal), 0)
 	// * (1.0f - F_GGX(0.1f, dot(light_direction.xyz, halfway)))
 
-	//float3 specular = specGGX(input.normal, light_direction.xyz, -input.camera_direction, 0.15f, earth_spec);
+	//float3 specular = specGGX(input.normal, light_direction.xyz, -input.camera_direction, 0.25f, 1.0f);
+	//float3 specular = specPhong(input.normal, -light_direction.xyz, -input.camera_direction, 20.0f);
+	float3 specular = specBlinnPhong(input.normal, light_direction.xyz, -input.camera_direction, 20.0f);
 
-	float3 final_color = ambient + diffuse;
-
+	float3 final_color = ambient + diffuse + specular;
 	return float4(final_color, 1.0);
 }

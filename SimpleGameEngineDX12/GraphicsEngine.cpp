@@ -1,5 +1,6 @@
 #include "GraphicsEngine.h"
 #include "RenderSystem.h"
+#include "DeviceContext.h"
 
 GraphicsEngine* GraphicsEngine::graphics_engine = nullptr;
 
@@ -67,6 +68,46 @@ void GraphicsEngine::getVMLShaderByteCodeAndSize(void** byte_code, size_t* size)
 {
 	*byte_code = mesh_layout_byte_code;
 	*size = mesh_layout_size;
+}
+
+MaterialPtr GraphicsEngine::createMaterial(const wchar_t* vs_path, const wchar_t* ps_path)
+{
+	MaterialPtr mat = nullptr;
+	try
+	{
+		mat = std::make_shared<Material>(vs_path, ps_path);
+	}
+	catch (...)
+	{
+	}
+	return mat;
+}
+
+MaterialPtr GraphicsEngine::createMaterial(const MaterialPtr& mat)
+{
+	MaterialPtr material = nullptr;
+	try
+	{
+		MaterialPtr material = std::make_shared<Material>(mat);
+	}
+	catch (...)
+	{
+	}
+	return material;
+}
+
+void GraphicsEngine::setMaterial(const MaterialPtr& mat)
+{
+	GraphicsEngine::get()->getRenderSystem()->setRasterizerState((mat->cull_mode == CULL_MODE_FRONT));
+
+	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setConstantBuffer(mat->vertex_shader, mat->constant_buffer);
+	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setConstantBuffer(mat->pixel_shader, mat->constant_buffer);
+
+	//SET DEFAULT SHADER IN THE GRAPHICS PIPELINE TO BE ABLE TO DRAW
+	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setVertexShader(mat->vertex_shader);
+	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setPixelShader(mat->pixel_shader);
+
+	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setTexture(mat->pixel_shader, &mat->textures[0], mat->textures.size());
 }
 
 GraphicsEngine* GraphicsEngine::get()
