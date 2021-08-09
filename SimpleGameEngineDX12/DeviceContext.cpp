@@ -35,9 +35,9 @@ void DeviceContext::clearRenderTargetColor(const TexturePtr& render_target, floa
 
 void DeviceContext::clearDepthStencil(const TexturePtr& depth_stencil)
 {
-	if (depth_stencil->texture_type != Texture::TEXTURE_TYPE::TEXTURE_TYPE_DEPTH_STENCIL) return;
+	//if (depth_stencil->texture_type != Texture::TEXTURE_TYPE::TEXTURE_TYPE_DEPTH_STENCIL) return;
 
-	m_device_context->ClearDepthStencilView(depth_stencil->depth_stencil_view, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1, 0);
+	m_device_context->ClearDepthStencilView(depth_stencil->depth_stencil_view, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 }
 
 void DeviceContext::SetRenderTarget(const SwapChainPtr& swap_chain)
@@ -47,10 +47,13 @@ void DeviceContext::SetRenderTarget(const SwapChainPtr& swap_chain)
 
 void DeviceContext::SetRenderTarget(const TexturePtr& render_target, const TexturePtr& depth_stencil)
 {
-	if (render_target->texture_type != Texture::TEXTURE_TYPE::TEXTURE_TYPE_RENDER_TARGET) return;
-	if (depth_stencil->texture_type != Texture::TEXTURE_TYPE::TEXTURE_TYPE_DEPTH_STENCIL) return;
-
-	m_device_context->OMSetRenderTargets(1, &render_target->render_target_view, depth_stencil->depth_stencil_view);
+	//if (render_target->texture_type != Texture::TEXTURE_TYPE::TEXTURE_TYPE_RENDER_TARGET) return;
+	//if (depth_stencil->texture_type != Texture::TEXTURE_TYPE::TEXTURE_TYPE_DEPTH_STENCIL) return;
+	if (render_target == NULL && depth_stencil == NULL)
+	{
+		m_device_context->OMSetRenderTargets(1, NULL, NULL);
+	}
+	else m_device_context->OMSetRenderTargets(1, &render_target->render_target_view, depth_stencil->depth_stencil_view);
 }
 
 void DeviceContext::setVertexBuffer(const VertexBufferPtr& vertex_buffer)
@@ -140,6 +143,12 @@ void DeviceContext::setTexture(const PixelShaderPtr& pixel_shader, const Texture
 
 	m_device_context->PSSetShaderResources(0, num_tex, res_views);
 	m_device_context->PSSetSamplers(0, num_tex, samplers);
+}
+
+void DeviceContext::unbindSRV()
+{
+	ID3D11ShaderResourceView* nullSRV[1] = { nullptr };
+	m_device_context->PSSetShaderResources(0, 1, nullSRV);
 }
 
 DeviceContext::~DeviceContext()

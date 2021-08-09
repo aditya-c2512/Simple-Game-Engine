@@ -14,8 +14,12 @@ Material::Material(const wchar_t* vs_path, const wchar_t* ps_path)
 
 	if (!vertex_shader) throw std::runtime_error("VERTEX SHADER NOT CREATED IN MATERIAL.");
 
+	shader_byte_code = nullptr;
+	size_shader = 0;
+
 	GraphicsEngine::get()->getRenderSystem()->compilePixelShader(ps_path, "psmain", &shader_byte_code, &size_shader);
 	pixel_shader = GraphicsEngine::get()->getRenderSystem()->createPixelShader(shader_byte_code, size_shader);
+	//GraphicsEngine::get()->getRenderSystem()->releaseCompiledShader();
 
 	if (!pixel_shader) throw std::runtime_error("PIXEL SHADER NOT CREATED IN MATERIAL.");
 }

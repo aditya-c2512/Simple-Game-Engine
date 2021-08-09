@@ -1,5 +1,5 @@
 #pragma once
-
+#include <math.h>
 class Vector3D
 {
 public:
@@ -24,6 +24,19 @@ public:
 	Vector3D operator *(float num)
 	{
 		return Vector3D(x * num, y * num, z * num);
+	}
+	Vector3D normalize()
+	{
+		float length = sqrtf(x * x + y * y + z * z);
+		return Vector3D(x / length, y / length, z / length);
+	}
+	Vector3D crossProduct(Vector3D v)
+	{
+		float x1 = y * v.z - z * v.y;// Cx
+		float y1 = z * v.x - x * v.z;// Cy
+		float z1 = x * v.y - y * v.x;// Cz
+
+		return Vector3D(x1, y1, z1);
 	}
 public:
 	float x, y, z;

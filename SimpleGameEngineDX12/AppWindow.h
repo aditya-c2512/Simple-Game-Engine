@@ -65,6 +65,7 @@ private:
 
 	MaterialPtr MAT_mesh;
 	MaterialPtr MAT_sky;
+	MaterialPtr MAT_shadow_map;
 	MeshPtr SM_mesh;
 	MeshPtr SM_plane;
 	MeshPtr SM_sky_mesh;
@@ -81,6 +82,10 @@ private:
 	float move_forward = 0.0f;
 	float move_right = 0.0f;
 	float rotate_light_y = 0.0f;
+
+	Matrix4x4 lightProjectionMatrix;
+	Matrix4x4 lightViewMatrix;
+	Matrix4x4 lightSpaceMatrix;
 
 	bool play_state = false;
 	bool fullscreen_state = false;

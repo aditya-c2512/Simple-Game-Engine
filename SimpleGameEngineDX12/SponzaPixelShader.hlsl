@@ -1,7 +1,8 @@
-#define PI 3.14159
-
 Texture2D tex : register(t0);
 sampler TextureSampler : register(s0);
+
+Texture2D shadowMap : register(t1);
+sampler ShadowMapSampler : register(s1);
 
 struct PS_INPUT
 {
@@ -9,6 +10,7 @@ struct PS_INPUT
 	float2 texcoord : TEXCOORD0;
 	float3 normal : TEXCOORD1;
 	float3 camera_direction : TEXCOORD2;
+	float4 pixelPosLightSpace : NORMAL1;
 };
 
 cbuffer constant : register(b0)
@@ -18,6 +20,9 @@ cbuffer constant : register(b0)
 	row_major float4x4 projectionMatrix;
 	float4 light_direction;
 	float4 camera_position;
+	row_major float4x4 lightSpace;
+	float4 light_position;
+	float light_radius;
 	float time;
 };
 
@@ -38,7 +43,6 @@ float D_GGX(float a, float noh)
 	float d = a / (noh * noh * (a * a - 1.0f) + 1.0f);
 	return d * d;
 }
-
 float3 specGGX(float3 n, float3 l, float3 v, float roughness, float spec)
 {
 	//Cook-Torrance GGX Shading
@@ -68,6 +72,15 @@ float3 specBlinnPhong(float3 n, float3 l, float3 v, float glossy)
 	return specular;
 }
 
+float shadowCalc(float4 pixelPosLightSpace)
+{
+	float3 coords = pixelPosLightSpace.xyz / pixelPosLightSpace.w;
+	coords = coords * 0.5f + 0.5f;
+	float depth = shadowMap.Sample(ShadowMapSampler, coords.xy).r;
+	float currentDepth = coords.z;
+	return currentDepth > depth ? 1.0 : 0.0;
+}
+
 float4 psmain(PS_INPUT input) : SV_TARGET
 {
 	float ka = 0.0f;
@@ -85,6 +98,13 @@ float4 psmain(PS_INPUT input) : SV_TARGET
 	//float3 specular = specPhong(input.normal, -light_direction.xyz, -input.camera_direction, 20.0f);
 	float3 specular = specBlinnPhong(input.normal, light_direction.xyz, -input.camera_direction, 20.0f);
 
-	float3 final_color = ambient + diffuse + specular;
+	float shadow = shadowCalc(input.pixelPosLightSpace);
+
+	float3 final_color = ambient + (1.0f - shadow) * (diffuse + specular);
+
+	float3 coords = input.pixelPosLightSpace.xyz / input.pixelPosLightSpace.w;
+	coords = coords * 0.5f + 0.5f;
+	float depth = shadowMap.Sample(ShadowMapSampler, coords.xy).r;
+	//return float4(depth, depth, depth, 1.0);
 	return float4(final_color, 1.0);
 }

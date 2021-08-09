@@ -56,7 +56,7 @@ Texture::Texture(const Rect& s, Texture::TEXTURE_TYPE type) : Resource(L"")
 	}
 	else if (type == TEXTURE_TYPE_DEPTH_STENCIL)
 	{
-		tex_desc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+		tex_desc.Format = DXGI_FORMAT_R24G8_TYPELESS;
 		tex_desc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
 	}
 	else if (type == TEXTURE_TYPE_SHADOW_MAP)
@@ -68,7 +68,7 @@ Texture::Texture(const Rect& s, Texture::TEXTURE_TYPE type) : Resource(L"")
 	tex_desc.Usage = D3D11_USAGE_DEFAULT;
 	//tex_desc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
 	tex_desc.MipLevels = 1;
-	tex_desc.SampleDesc.Count = 2;
+	tex_desc.SampleDesc.Count = 1;
 	tex_desc.SampleDesc.Quality = 0;
 	tex_desc.MiscFlags = 0;
 	tex_desc.ArraySize = 1;
@@ -98,7 +98,25 @@ Texture::Texture(const Rect& s, Texture::TEXTURE_TYPE type) : Resource(L"")
 	}
 	else if (type == TEXTURE_TYPE_DEPTH_STENCIL)
 	{
-		hr = GraphicsEngine::get()->getRenderSystem()->m_d3d_device->CreateDepthStencilView(texture, NULL, &depth_stencil_view);
+		D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc;
+		depthStencilViewDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+		depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+		depthStencilViewDesc.Texture2D.MipSlice = 0;
+		depthStencilViewDesc.Flags = 0;
+
+		hr = GraphicsEngine::get()->getRenderSystem()->m_d3d_device->CreateDepthStencilView(texture, &depthStencilViewDesc, &depth_stencil_view);
+		if (FAILED(hr))
+		{
+			throw std::exception("FAILED TO CREATE DEPTH STENCIL VIEW");
+		}
+
+		D3D11_SHADER_RESOURCE_VIEW_DESC shaderResourceViewDesc;
+		shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+		shaderResourceViewDesc.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
+		shaderResourceViewDesc.Texture2D.MipLevels = 1;
+		shaderResourceViewDesc.Texture2D.MostDetailedMip = 0;
+
+		hr = GraphicsEngine::get()->getRenderSystem()->m_d3d_device->CreateShaderResourceView(texture, &shaderResourceViewDesc, &shader_resource_view);
 		if (FAILED(hr))
 		{
 			throw std::exception("FAILED TO CREATE DEPTH STENCIL VIEW");

@@ -67,6 +67,9 @@
     <Filter Include="GameEngine\GraphicsEngine\Material">
       <UniqueIdentifier>{41e6df5c-9709-4a07-b5d8-ee1cd3858da6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="App\Shaders\ShadowMapShaders">
+      <UniqueIdentifier>{332fff3f-a7be-4dfd-93eb-af92e6798e59}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -223,14 +226,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="PixelShader.hlsl">
-      <Filter>App\Shaders\EarthShaders</Filter>
-    </None>
-    <None Include="VertexShader.hlsl">
-      <Filter>App\Shaders\EarthShaders</Filter>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
     <FxCompile Include="VertexMeshLayout.hlsl">
       <Filter>GameEngine\GraphicsEngine\RenderSystem\VertexShader</Filter>
     </FxCompile>
@@ -249,5 +244,13 @@
     <FxCompile Include="SponzaPixelShader.hlsl">
       <Filter>App\Shaders\SponzaShaders</Filter>
     </FxCompile>
+    <FxCompile Include="ShadowMapVertexShader.hlsl">
+      <Filter>App\Shaders\ShadowMapShaders</Filter>
+    </FxCompile>
+    <FxCompile Include="ShadowMapPixelShader.hlsl">
+      <Filter>App\Shaders\ShadowMapShaders</Filter>
+    </FxCompile>
+    <FxCompile Include="PixelShader.hlsl" />
+    <FxCompile Include="VertexShader.hlsl" />
   </ItemGroup>
 </Project>

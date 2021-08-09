@@ -32,6 +32,8 @@ public:
 	void setTexture(const VertexShaderPtr& vertex_shader, const TexturePtr* textures, unsigned int num_tex);
 	void setTexture(const PixelShaderPtr& pixel_shader, const TexturePtr* textures, unsigned int num_tex);
 
+	void unbindSRV();
+
 	~DeviceContext();
 private:
 	ID3D11DeviceContext* m_device_context;

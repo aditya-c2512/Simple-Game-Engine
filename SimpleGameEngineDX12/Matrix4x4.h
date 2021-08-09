@@ -146,6 +146,29 @@ public:
 	{
 		return Vector3D(mat[3][0], mat[3][1], mat[3][2]);
 	}
+	static Matrix4x4 lookAt(Vector3D eye, Vector3D target, Vector3D up)
+	{
+		Vector3D fwd = (eye + (target * (-1.0f))).normalize();
+		Vector3D right = up.crossProduct(fwd);
+		Vector3D up1 = fwd.crossProduct(right);
+
+		Matrix4x4 camToWorld;
+		camToWorld.mat[0][0] = right.x;
+		camToWorld.mat[0][1] = right.y;
+		camToWorld.mat[0][2] = right.z;
+		camToWorld.mat[1][0] = up.x;
+		camToWorld.mat[1][1] = up.y;
+		camToWorld.mat[1][2] = up.z;
+		camToWorld.mat[2][0] = fwd.x;
+		camToWorld.mat[2][1] = fwd.y;
+		camToWorld.mat[2][2] = fwd.z;
+
+		camToWorld.mat[3][0] = eye.x;
+		camToWorld.mat[3][1] = eye.y;
+		camToWorld.mat[3][2] = eye.z;
+
+		return camToWorld;
+	}
 
 	void operator*=(const Matrix4x4& matrix)
 	{

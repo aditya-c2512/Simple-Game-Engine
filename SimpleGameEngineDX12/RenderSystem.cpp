@@ -30,7 +30,7 @@ RenderSystem::RenderSystem()
 
 	for (UINT driver_type_index = 0; driver_type_index < num_driver_types;)
 	{
-		res = D3D11CreateDevice(NULL, driver_types[driver_type_index], NULL, NULL, feature_levels,
+		res = D3D11CreateDevice(NULL, driver_types[driver_type_index], NULL, D3D11_CREATE_DEVICE_DEBUG, feature_levels,
 			num_feature_levels, D3D11_SDK_VERSION, &m_d3d_device, &m_feature_level, &m_imm_context);
 		if (SUCCEEDED(res))
 			break;
@@ -146,12 +146,16 @@ bool RenderSystem::compileVertexShader(const wchar_t* filename, const char* entr
 	HRESULT hr = D3DCompileFromFile(filename, nullptr, nullptr, entrypoint_name, "vs_5_0", 0, 0, &m_blob, &errblob);
 	if (!SUCCEEDED(hr))
 	{
-		if (errblob) errblob->Release();
+		if (errblob)
+		{
+			OutputDebugStringA((char*)errblob->GetBufferPointer());
+			errblob->Release();
+		}
 		return false;
 	}
 	*shader_byte_code = m_blob->GetBufferPointer();
 	*byte_code_size = m_blob->GetBufferSize();
-
+	
 	return true;
 }
 
@@ -160,7 +164,11 @@ bool RenderSystem::compilePixelShader(const wchar_t* filename, const char* entry
 	ID3DBlob* errblob = nullptr;
 	if (!SUCCEEDED(D3DCompileFromFile(filename, nullptr, nullptr, entrypoint_name, "ps_5_0", 0, 0, &m_blob, &errblob)))
 	{
-		if (errblob) errblob->Release();
+		if (errblob)
+		{
+			OutputDebugStringA((char*)errblob->GetBufferPointer());
+			errblob->Release();
+		}
 		return false;
 	}
 
