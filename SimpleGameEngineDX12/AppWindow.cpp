@@ -20,9 +20,9 @@ struct constant
 	Matrix4x4 worldMatrix;
 	Matrix4x4 viewMatrix;
 	Matrix4x4 projectionMatrix;
+	glm::mat4 lightSpace;
 	Vector4D light_direction;
 	Vector4D camera_position;
-	Matrix4x4 lightSpace;
 	Vector4D light_position = Vector4D(0, 1, 0, 1);
 	float light_radius = 2.0f;
 	float time = 0.0f;
@@ -58,10 +58,8 @@ void AppWindow::onCreate()
 	RECT rc = this->getClientWindowRect();
 	m_swap_chain = GraphicsEngine::get()->getRenderSystem()->createSwapChain(this->m_hwnd, rc.right - rc.left, rc.bottom - rc.top);
 
-	//void* shader_byte_code = nullptr;
-	//size_t size_shader = 0;
-
 	MAT_mesh = GraphicsEngine::get()->createMaterial(L"SponzaVertexShader.hlsl", L"SponzaPixelShader.hlsl");
+	MAT_mesh->addTexture(TEX_scene);
 	MAT_mesh->setCullMode(CULL_MODE_BACK);
 	
 	MAT_sky = GraphicsEngine::get()->createMaterial(L"SponzaVertexShader.hlsl", L"SkyPixelShader.hlsl");
@@ -72,12 +70,7 @@ void AppWindow::onCreate()
 	shadow_map_dsv = GraphicsEngine::get()->getTextureManager()->createTexture(Rect(1920, 1080), Texture::TEXTURE_TYPE::TEXTURE_TYPE_DEPTH_STENCIL);
 
 	MAT_shadow_map = GraphicsEngine::get()->createMaterial(L"ShadowMapVertexShader.hlsl", L"ShadowMapPixelShader.hlsl");
-	//MAT_shadow_map->addTexture(shadow_map_dsv);
 	MAT_shadow_map->setCullMode(CULL_MODE_BACK);
-
-	MAT_mesh->addTexture(TEX_scene);
-	MAT_mesh->addTexture(shadow_map_dsv);
-	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->unbindSRV();
 }
 
 void AppWindow::onUpdate()
@@ -115,7 +108,6 @@ void AppWindow::onSize()
 
 void AppWindow::renderShadowMap()
 {
-	//GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->unbindSRV();
 	//CLEAR THE RENDER TARGET AND DEPTH STENCIL
 	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->clearRenderTargetColor(shadow_map_rtv, 1.0, 1.0f, 1.0f, 1);
 	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->clearDepthStencil(shadow_map_dsv);
@@ -123,10 +115,10 @@ void AppWindow::renderShadowMap()
 	//SET VIEWPORT OF RENDER TARGET IN WHICH WE HAVE TO DRAW
 	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setViewportSize(1920, 1080);
 
-	lightViewMatrix = Matrix4x4::lookAt(Vector3D(2,2,0), Vector3D(0, 0, 0), Vector3D(0, 1, 0));
-	lightProjectionMatrix.setOrthoProj(20, 20, 1.0f, 10.0f);
-	lightSpaceMatrix = lightProjectionMatrix;
-	lightSpaceMatrix *= lightViewMatrix;
+	/*lvm = glm::lookAt(glm::vec3(0, 30, 0), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+	lpm = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 0.1f, 10.0f);
+	lsm = glm::mat4x4(1);
+	lsm = lpm * lvm;*/
 
 	updateModel(Vector3D(0, 0, 0), MAT_shadow_map);
 	SM_mesh->drawMesh(MAT_shadow_map);
@@ -134,13 +126,12 @@ void AppWindow::renderShadowMap()
 	updateModel(Vector3D(0, -0.5f, 0), MAT_shadow_map);
 	SM_plane->drawMesh(MAT_shadow_map);
 
-	SM_sky_mesh->drawMesh(MAT_shadow_map);
-
 	//GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->SetRenderTarget(NULL, NULL);
 }
 
 void AppWindow::render()
 {
+	MAT_mesh->addTexture(shadow_map_dsv);
 	//CLEAR THE RENDER TARGET 
 	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->clearRenderTargetColor(this->m_swap_chain, 0.3f, 0.4f, 0.5f, 1);
 	//SET VIEWPORT OF RENDER TARGET IN WHICH WE HAVE TO DRAW
@@ -164,7 +155,9 @@ void AppWindow::render()
 	deltaTime = (oldDelta) ? ((newDelta - oldDelta) / 1000.0f) : 0.0f;
 	time += deltaTime;
 
+	
 	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->unbindSRV();
+	MAT_mesh->removeTexture(1);
 }
 
 void AppWindow::update()
@@ -181,9 +174,8 @@ void AppWindow::updateModel(Vector3D pos, const MaterialPtr& mat)
 	constant cc;
 	Matrix4x4 light_rot;
 	light_rot.setIdentity();
-	light_rot.setRotationY(0);
+	light_rot.setRotationY(-90);
 	light_rot.setRotationX(-90);
-	//rotate_light_y += 0.707f * deltaTime;
 
 	cc.worldMatrix.setIdentity();
 	cc.worldMatrix.setTranslation(pos);
@@ -195,7 +187,13 @@ void AppWindow::updateModel(Vector3D pos, const MaterialPtr& mat)
 	cc.light_position = Vector4D(cos(rotate_light_y) * dist_from_orig, 1.0f, sin(rotate_light_y) * dist_from_orig,1.0f);
 	cc.time = time;
 
-	cc.lightSpace = lightSpaceMatrix;
+
+	//lvm = glm::lookAt(-glm::vec3(light_rot.getZDirection().x, light_rot.getZDirection().y, light_rot.getZDirection().z), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+	lvm = glm::lookAt(glm::vec3(2.0f, 4.0f, 1.0f), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+	lpm = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 0.1f, 10.0f);
+	lsm = glm::mat4x4(1);
+	lsm = lpm * lvm;
+	cc.lightSpace = lsm;
 
 	mat->setData(&cc, sizeof(constant));
 }

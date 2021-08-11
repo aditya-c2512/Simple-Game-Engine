@@ -110,6 +110,19 @@ Texture::Texture(const Rect& s, Texture::TEXTURE_TYPE type) : Resource(L"")
 			throw std::exception("FAILED TO CREATE DEPTH STENCIL VIEW");
 		}
 
+		D3D11_SAMPLER_DESC sampler_desc = {};
+		sampler_desc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
+		sampler_desc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
+		sampler_desc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
+		sampler_desc.BorderColor[0] = 1.0f;
+		sampler_desc.BorderColor[1] = 1.0f;
+		sampler_desc.BorderColor[2] = 1.0f;
+		sampler_desc.BorderColor[3] = 1.0f;
+		sampler_desc.Filter = D3D11_FILTER_ANISOTROPIC;
+
+		hr = GraphicsEngine::get()->getRenderSystem()->m_d3d_device->CreateSamplerState(&sampler_desc, &sampler_state);
+		if (FAILED(hr)) throw std::exception("FAILED TO CREATE SAMPLER STATE");
+
 		D3D11_SHADER_RESOURCE_VIEW_DESC shaderResourceViewDesc;
 		shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 		shaderResourceViewDesc.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;

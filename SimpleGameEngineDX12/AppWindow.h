@@ -12,6 +12,10 @@
 #include "Matrix4x4.h"
 #include "FPSCamera.h"
 
+#include "libs/glm/glm.hpp"
+#include "libs/glm/gtc/matrix_transform.hpp"
+#include "libs/glm/gtc/type_ptr.hpp"
+
 /* TO-DO :
 * 1. SHADOW MAPS -
 * -> Make a projection matrix "lightProjectionMatrix" to store the orthographic projection for the texture.
@@ -86,6 +90,10 @@ private:
 	Matrix4x4 lightProjectionMatrix;
 	Matrix4x4 lightViewMatrix;
 	Matrix4x4 lightSpaceMatrix;
+
+	glm::mat4 lvm;
+	glm::mat4 lpm;
+	glm::mat4 lsm;
 
 	bool play_state = false;
 	bool fullscreen_state = false;

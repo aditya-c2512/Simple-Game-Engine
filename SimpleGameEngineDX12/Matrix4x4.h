@@ -156,9 +156,9 @@ public:
 		camToWorld.mat[0][0] = right.x;
 		camToWorld.mat[0][1] = right.y;
 		camToWorld.mat[0][2] = right.z;
-		camToWorld.mat[1][0] = up.x;
-		camToWorld.mat[1][1] = up.y;
-		camToWorld.mat[1][2] = up.z;
+		camToWorld.mat[1][0] = up1.x;
+		camToWorld.mat[1][1] = up1.y;
+		camToWorld.mat[1][2] = up1.z;
 		camToWorld.mat[2][0] = fwd.x;
 		camToWorld.mat[2][1] = fwd.y;
 		camToWorld.mat[2][2] = fwd.z;

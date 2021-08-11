@@ -18,9 +18,9 @@ cbuffer constant : register(b0)
 	row_major float4x4 worldMatrix;
 	row_major float4x4 viewMatrix;
 	row_major float4x4 projectionMatrix;
+	row_major float4x4 lightSpace;
 	float4 light_direction;
 	float4 camera_position;
-	row_major float4x4 lightSpace;
 	float4 light_position;
 	float light_radius;
 	float time;
@@ -83,14 +83,14 @@ float shadowCalc(float4 pixelPosLightSpace)
 
 float4 psmain(PS_INPUT input) : SV_TARGET
 {
-	float ka = 0.0f;
+	float ka = 1.0f;
 	float3 ia = float3(0.09, 0.082, 0.082);
 	float3 ambient = ka * ia;
 
 	float kd = 1.0f;
 	float3 id = tex.Sample(TextureSampler, 1.0f - input.texcoord);
 	float3 halfway = normalize(-input.camera_direction + light_direction.xyz);
-	float3 diffuse = kd * id * max(dot(light_direction.xyz, input.normal), 0) * (1.0f - F_GGX(0.09f, dot(light_direction.xyz, halfway)));
+	float3 diffuse = kd * id * max(dot(light_direction.xyz, input.normal), 0);
 	// * max(dot(light_direction.xyz, input.normal), 0)
 	// * (1.0f - F_GGX(0.1f, dot(light_direction.xyz, halfway)))
 
@@ -102,9 +102,5 @@ float4 psmain(PS_INPUT input) : SV_TARGET
 
 	float3 final_color = ambient + (1.0f - shadow) * (diffuse + specular);
 
-	float3 coords = input.pixelPosLightSpace.xyz / input.pixelPosLightSpace.w;
-	coords = coords * 0.5f + 0.5f;
-	float depth = shadowMap.Sample(ShadowMapSampler, coords.xy).r;
-	//return float4(depth, depth, depth, 1.0);
 	return float4(final_color, 1.0);
 }

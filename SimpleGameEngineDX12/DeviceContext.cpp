@@ -148,7 +148,7 @@ void DeviceContext::setTexture(const PixelShaderPtr& pixel_shader, const Texture
 void DeviceContext::unbindSRV()
 {
 	ID3D11ShaderResourceView* nullSRV[1] = { nullptr };
-	m_device_context->PSSetShaderResources(0, 1, nullSRV);
+	m_device_context->PSSetShaderResources(1, 1, nullSRV);
 }
 
 DeviceContext::~DeviceContext()
